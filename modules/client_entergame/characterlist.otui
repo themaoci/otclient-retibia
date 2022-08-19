@@ -51,7 +51,7 @@ MainWindow
     g_keyboard.bindKeyPress('Up', function() self:getChildById('characters'):focusPreviousChild(KeyboardFocusReason) end, self)
     g_keyboard.bindKeyPress('Down', function() self:getChildById('characters'):focusNextChild(KeyboardFocusReason) end, self)
     if g_game.getFeature(GamePreviewState) then
-      self:setSize({width = 350, height = 400})
+      self:setSize({width = 400, height = 400})
     else
       self:setSize({width = 250, height = 248})
     end
@@ -104,17 +104,6 @@ MainWindow
     anchors.right: parent.right
     anchors.bottom: next.top
     margin-bottom: 10
-
-  //CheckBox
-  //  id: charAutoLoginBox
-  //  !text: tr('Auto login')
-  //  !tooltip: tr('Auto login selected character on next charlist load')
-  //  anchors.left: parent.left
-  //  anchors.right: parent.right
-  //  anchors.bottom: next.top
-  //  margin-bottom: 6
-  //  margin-left: 18
-  //  margin-right: 18
 
   Button
     id: buttonOk

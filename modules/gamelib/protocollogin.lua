@@ -38,18 +38,25 @@ function ProtocolLogin:sendLoginPacket()
     local msg = OutputMessage.create()
     print("sendloginpacked lua")
     msg:addU8(ClientOpcodes.ClientEnterAccount) -- 1
+    print(ClientOpcodes.ClientEnterAccount)
     -- we want an OS of user
     msg:addU16(g_game.getOs()) -- 2
+    print(g_game.getOs())
     -- make sure to send protocol
     msg:addU16(g_game.getProtocolVersion()) -- 2
+    print(g_game.getProtocolVersion())
     -- make sure to send client file size
     msg:addString(g_game.getClientFileSize()); -- 4
+    print(g_game.getClientVersion())
     msg:addU32(g_game.getClientVersion()) -- 4
     -- get dat signature
+    print(g_things.getDatSignature())
     msg:addU32(g_things.getDatSignature()) -- 4
     -- get sprite signature
+    print(g_sprites.getSprSignature())
     msg:addU32(g_sprites.getSprSignature()) -- 4
     -- get PIC signature
+    print(PIC_SIGNATURE)
     msg:addU32(PIC_SIGNATURE) -- 4
 
     -- if g_game.getFeature(GamePreviewState) then

@@ -23,7 +23,6 @@
 #include "framework/net/outputmessage.h"
 #include "game.h"
 #include "protocolgame.h"
-#include "client/client.h"
 #include <framework/core/application.h>
 #include <framework/platform/platform.h>
 #include <framework/util/crypt.h>
@@ -52,25 +51,23 @@ void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string_view buf
 void ProtocolGame::sendLoginPacket(uint32_t challengeTimestamp, uint8_t challengeRandom)
 {
     const OutputMessagePtr msg(new OutputMessage);
-    g_logger.debug("sendLoginPacket !!!");
-    msg->addU8(Proto::ClientPendingGame);
-    msg->addU16(g_game.getOs());
-    msg->addU16(g_game.getProtocolVersion());
+    g_logger.info("sendLoginPacket Client cpp");
+    msg->addU8(Proto::ClientPendingGame); // 1
+    msg->addU16(g_game.getOs());// 2
+    msg->addU16(g_game.getProtocolVersion());// 2
 
-    msg->addString(g_app.getClientFileSize());
+    //if (g_game.getFeature(Otc::GameClientVersion))
+    //    msg->addU32(g_game.getClientVersion());// 4
 
-    if (g_game.getFeature(Otc::GameClientVersion))
-        msg->addU32(g_game.getClientVersion());
+    //if (g_game.getClientVersion() >= 1281) {
+    //    msg->addString(std::to_string(g_game.getClientVersion()));// 4
+    //}
 
-    if (g_game.getClientVersion() >= 1281) {
-        msg->addString(std::to_string(g_game.getClientVersion()));
-    }
+    //if (g_game.getFeature(Otc::GameContentRevision))
+    //    msg->addU16(g_things.getContentRevision());// 2
 
-    if (g_game.getFeature(Otc::GameContentRevision))
-        msg->addU16(g_things.getContentRevision());
-
-    if (g_game.getFeature(Otc::GamePreviewState))
-        msg->addU8(0);
+    //if (g_game.getFeature(Otc::GamePreviewState))
+        msg->addU8(1); // 1
 
     const int offset = msg->getMessageSize();
 

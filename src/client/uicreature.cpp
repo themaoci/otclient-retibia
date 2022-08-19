@@ -31,7 +31,7 @@ void UICreature::drawSelf(Fw::DrawPane drawPane)
 
     if (m_creature) {
         const Rect drawRect = getPaddingRect();
-        m_creature->drawOutfit(drawRect, !m_fixedCreatureSize, m_imageColor);
+        m_creature->drawOutfit(drawRect, !m_fixedCreatureSize, m_imageColor, m_direction, m_animate);
     }
 }
 
@@ -72,4 +72,11 @@ void UICreature::onStyleApply(const std::string_view styleName, const OTMLNodePt
             setOutfit(outfit);
         }
     }
+}
+
+void UICreature::setCenter(bool value)
+{
+    Outfit outfit = m_creature->getOutfit();
+    outfit.setCenter(value);
+    setOutfit(outfit);
 }

@@ -184,7 +184,7 @@ void Creature::internalDrawOutfit(Point dest, float scaleFactor, bool animateWal
     }
 }
 
-void Creature::drawOutfit(const Rect& destRect, bool resize, const Color color)
+void Creature::drawOutfit(const Rect& destRect, bool resize, const Color color, Otc::Direction direction, bool animate)
 {
     int frameSize;
     if (!resize)
@@ -195,7 +195,7 @@ void Creature::drawOutfit(const Rect& destRect, bool resize, const Color color)
     const float scaleFactor = destRect.width() / static_cast<float>(frameSize);
     const Point dest = destRect.bottomRight() - (Point(SPRITE_SIZE) - getDisplacement()) * scaleFactor;
 
-    internalDrawOutfit(dest, scaleFactor, true, TextureType::SMOOTH, Otc::South, color);
+    internalDrawOutfit(dest, scaleFactor, animate, TextureType::SMOOTH, direction, color);
 }
 
 void Creature::drawInformation(const MapPosInfo& mapRect, const Point& dest, float scaleFactor, bool useGray, int drawFlags)

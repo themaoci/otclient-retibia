@@ -51,7 +51,7 @@ public:
 
     void internalDrawOutfit(Point dest, float scaleFactor, bool animateWalk, TextureType textureType, Otc::Direction direction, Color color);
 
-    void drawOutfit(const Rect& destRect, bool resize, Color color = Color::white);
+    void drawOutfit(const Rect& destRect, bool resize, Color color = Color::white, Otc::Direction direction = Otc::South, bool animate = true);
     void drawInformation(const MapPosInfo& mapRect, const Point& dest, float scaleFactor, bool useGray, int drawFlags);
 
     void setId(uint32_t id) override { m_id = id; }

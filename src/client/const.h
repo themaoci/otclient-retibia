@@ -32,6 +32,7 @@ namespace Otc
         CLIENTOS_OTCLIENT_LINUX = 10,
         CLIENTOS_OTCLIENT_WINDOWS = 11,
         CLIENTOS_OTCLIENT_MAC = 12,
+        ReturnValuesOnServer = 9000
     };
 
     enum Operation : uint8_t

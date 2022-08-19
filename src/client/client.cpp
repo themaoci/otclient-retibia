@@ -31,6 +31,7 @@
 
 Client g_client;
 
+
 void Client::init(std::vector<std::string>& /*args*/)
 {
     // register needed lua functions

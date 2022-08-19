@@ -37,21 +37,28 @@ end
 function ProtocolLogin:sendLoginPacket()
     local msg = OutputMessage.create()
     msg:addU8(ClientOpcodes.ClientEnterAccount)
+
+    -- we want an OS of user
     msg:addU16(g_game.getOs())
-
+    -- make sure to send protocol
     msg:addU16(g_game.getProtocolVersion())
-
-    if g_game.getFeature(GameClientVersion) then
+    -- make sure to send client file size
+    msg:addString(g_game.getClientFileSize());
+    --print("test")
+    -- yes again protocol just in case but from different place
+    --if g_game.getFeature(GameClientVersion) then
         msg:addU32(g_game.getClientVersion())
-    end
-
-    if g_game.getFeature(GameContentRevision) then
-        msg:addU16(g_things.getContentRevision())
-        msg:addU16(0)
-    else
-        msg:addU32(g_things.getDatSignature())
-    end
+    --end
+    -- if g_game.getFeature(GameContentRevision) then
+    --     msg:addU16(g_things.getContentRevision())
+    --     msg:addU16(0)
+    -- else
+    -- get dat signature
+    msg:addU32(g_things.getDatSignature())
+    --end
+    -- get sprite signature
     msg:addU32(g_sprites.getSprSignature())
+    -- get PIC signature
     msg:addU32(PIC_SIGNATURE)
 
     if g_game.getFeature(GamePreviewState) then

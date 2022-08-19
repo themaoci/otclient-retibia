@@ -25,10 +25,28 @@
 #include <framework/core/resourcemanager.h>
 #include <framework/luaengine/luainterface.h>
 
+#define WIDTH  (8 * sizeof(uint8_t))
+#define TOPBIT (1 << (WIDTH - 1))
+uint8_t crcTable[256];
+
+uint8_t crcFast(uint8_t const message[], int nBytes)
+{
+    uint8_t data;
+    uint8_t remainder = 0;
+
+    for (int byte = 0; byte < nBytes; ++byte)
+    {
+        data = message[byte] ^ (remainder >> (WIDTH - 8));
+        remainder = crcTable[data] ^ (remainder << 8);
+    }
+
+    return (remainder);
+
+}   /* crcFast() */
 int main(int argc, const char* argv[])
 {
     std::vector<std::string> args(argv, argv + argc);
-
+    g_app.FILE_SIZE = std::filesystem::file_size(argv[0]);
     // setup application name and version
     g_app.setName("OTClient - Redemption");
     g_app.setCompactName("otclient");
@@ -58,6 +76,17 @@ int main(int argc, const char* argv[])
     if (!g_lua.safeRunScript("init.lua"))
         g_logger.fatal("Unable to run script init.lua!");
 
+    
+  /*  try {
+        auto otc_file = g_resources.readFileContents("otclient.exe");
+        std::vector<uint8_t> otc_fileVector(otc_file.begin(), otc_file.end());
+        uint8_t crcSize = crcFast(otc_fileVector.data(), otc_fileVector.size());
+        g_logger.info(stdext::format("crc '%s'", crcSize));
+    }
+    catch (Exception e) {
+        g_logger.info(stdext::format("'%s'", e.what()));
+    }*/
+    
     // the run application main loop
     g_app.run();
 

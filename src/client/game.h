@@ -373,6 +373,8 @@ public:
     void clearImbuement(uint8_t slot);
     void closeImbuingWindow();
 
+    std::string getClientFileSize() { return g_app.getClientFileSize(); }
+
 protected:
     void enableBotCall() { m_denyBotCall = false; }
     void disableBotCall() { m_denyBotCall = true; }

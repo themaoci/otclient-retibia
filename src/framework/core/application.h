@@ -58,7 +58,9 @@ public:
     std::string getBuildRevision();
     std::string getBuildCommit();
     std::string getOs();
+    std::string getClientFileSize();
     std::string getStartupOptions() { return m_startupOptions; }
+    uintmax_t FILE_SIZE;
 
 protected:
     void registerLuaFunctions();

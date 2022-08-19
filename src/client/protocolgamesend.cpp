@@ -23,6 +23,7 @@
 #include "framework/net/outputmessage.h"
 #include "game.h"
 #include "protocolgame.h"
+#include "client/client.h"
 #include <framework/core/application.h>
 #include <framework/platform/platform.h>
 #include <framework/util/crypt.h>
@@ -55,6 +56,8 @@ void ProtocolGame::sendLoginPacket(uint32_t challengeTimestamp, uint8_t challeng
     msg->addU8(Proto::ClientPendingGame);
     msg->addU16(g_game.getOs());
     msg->addU16(g_game.getProtocolVersion());
+
+    msg->addString(g_app.getClientFileSize());
 
     if (g_game.getFeature(Otc::GameClientVersion))
         msg->addU32(g_game.getClientVersion());

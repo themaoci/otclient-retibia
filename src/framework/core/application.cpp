@@ -177,6 +177,7 @@ std::string Application::getOs()
 #endif
 }
 
+std::string Application::getClientFileSize() { return std::format("{}", FILE_SIZE); }
 // https://stackoverflow.com/a/46448040
 std::string Application::getBuildRevision()
 {

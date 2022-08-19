@@ -63,7 +63,7 @@ public:
     std::string getClientModulesSize();
     std::string getClientModuleFileCount();
     std::string getStartupOptions() { return m_startupOptions; }
-    uintmax_t FILE_SIZE, MODULE_SIZE;
+    uintmax_t FILE_SIZE = 0, MODULE_SIZE = 0;
     int MODULE_FILE_COUNT = 0;
 
 protected:

@@ -52,7 +52,7 @@ void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string_view buf
 void ProtocolGame::sendLoginPacket(uint32_t challengeTimestamp, uint8_t challengeRandom)
 {
     const OutputMessagePtr msg(new OutputMessage);
-
+    g_logger.debug("sendLoginPacket !!!");
     msg->addU8(Proto::ClientPendingGame);
     msg->addU16(g_game.getOs());
     msg->addU16(g_game.getProtocolVersion());

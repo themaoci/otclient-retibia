@@ -36,36 +36,28 @@ end
 
 function ProtocolLogin:sendLoginPacket()
     local msg = OutputMessage.create()
-    msg:addU8(ClientOpcodes.ClientEnterAccount)
-
+    print("sendloginpacked lua")
+    msg:addU8(ClientOpcodes.ClientEnterAccount) -- 1
     -- we want an OS of user
-    msg:addU16(g_game.getOs())
+    msg:addU16(g_game.getOs()) -- 2
     -- make sure to send protocol
-    msg:addU16(g_game.getProtocolVersion())
+    msg:addU16(g_game.getProtocolVersion()) -- 2
     -- make sure to send client file size
-    msg:addString(g_game.getClientFileSize());
-    --print("test")
-    -- yes again protocol just in case but from different place
-    --if g_game.getFeature(GameClientVersion) then
-        msg:addU32(g_game.getClientVersion())
-    --end
-    -- if g_game.getFeature(GameContentRevision) then
-    --     msg:addU16(g_things.getContentRevision())
-    --     msg:addU16(0)
-    -- else
+    msg:addString(g_game.getClientFileSize()); -- 4
+    msg:addU32(g_game.getClientVersion()) -- 4
     -- get dat signature
-    msg:addU32(g_things.getDatSignature())
-    --end
+    msg:addU32(g_things.getDatSignature()) -- 4
     -- get sprite signature
-    msg:addU32(g_sprites.getSprSignature())
+    msg:addU32(g_sprites.getSprSignature()) -- 4
     -- get PIC signature
-    msg:addU32(PIC_SIGNATURE)
+    msg:addU32(PIC_SIGNATURE) -- 4
 
-    if g_game.getFeature(GamePreviewState) then
-        msg:addU8(0)
-    end
+    -- if g_game.getFeature(GamePreviewState) then
+        -- msg:addU8(0)
+    -- end
 
     local offset = msg:getMessageSize()
+    print(msg:getWritePos())
     if g_game.getFeature(GameLoginPacketEncryption) then
         -- first RSA byte must be 0
         msg:addU8(0)

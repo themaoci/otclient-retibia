@@ -74,4 +74,13 @@
 // You can compile it once and use this executable to only encrypt client files once with command --encrypt which will be using password below.
 #define ENABLE_ENCRYPTION_BUILDER 0
 // for security reasons make sure you are using password with at last 100+ characters
-#define ENCRYPTION_PASSWORD "SET_YOUR_PASSWORD_HERE"
+// this was used in resourcemanager.cpp at lines 409 and 435 i replaced that with XOR compilation time encyption which is used by cheat devs
+#define ENCRYPTION_PASSWORD "}K+(Fs&=}78Tk_ArY[(nUq3kRLCFHejdDkHj{Lz2X-gMRA84.Zq?n(b8_a_s(^vv)eQAJEL8}3=YNc}BfzLYm&2UCTcNq.ZDU9!C%H*X_vjX?KcatM}![sfH?sm}$)rc"
+
+/*
+first password is fake and will be a bait
+}K+(Fs&=}78Tk_ArY[(nUq3kRLCFHejdDkHj{Lz2X-gMRA84.Zq?n(b8_a_s(^vv)eQAJEL8}3=YNc}BfzLYm&2UCTcNq.ZDU9!C%H*X_vjX?KcatM}![sfH?sm}$)rc
+second password will be used in decryption
+XorStr("JN3j4-P3+>Cvnb?/tJxxx^R64*g7N(V>x?-)h(!_Zsdhjt!$yU7hR4xM.v6=L.-e{a%(XJDafQejvU4_^eZdK2GUppT$BxGn&2V>qhJ7*FTmX[9kQgY/xH_ZLkJ!=74D")
+*/
+//XorStr("1234567890!@#$%^&*()")

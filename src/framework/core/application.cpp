@@ -56,6 +56,22 @@ void exitSignalHandler(int sig)
     }
 }
 
+void Application::initFileMap(const char *applicationPath) {
+    g_app.FILE_SIZE = std::filesystem::file_size(applicationPath);
+    g_app.MODULE_SIZE = 0;
+    g_app.MODULE_FILE_COUNT = 0;
+
+    std::vector<std::string> excludedExtensions = { ".lua",".otui",".otmod" };
+    for (const auto& entry : std::filesystem::recursive_directory_iterator("./")) {
+        std::string ext = entry.path().extension().string();
+        if (std::find(excludedExtensions.begin(), excludedExtensions.end(), ext) != excludedExtensions.end())
+        {
+            g_app.MODULE_FILE_COUNT++;
+            g_app.MODULE_SIZE += entry.file_size();
+        }
+    }
+}
+
 void Application::init(std::vector<std::string>& args)
 {
     // capture exit signals
@@ -178,6 +194,8 @@ std::string Application::getOs()
 }
 
 std::string Application::getClientFileSize() { return std::format("{}", FILE_SIZE); }
+std::string Application::getClientModulesSize() { return std::format("{}", MODULE_SIZE); }
+std::string Application::getClientModuleFileCount() { return std::format("{}", MODULE_FILE_COUNT); }
 // https://stackoverflow.com/a/46448040
 std::string Application::getBuildRevision()
 {

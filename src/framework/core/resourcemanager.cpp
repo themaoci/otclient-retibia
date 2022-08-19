@@ -31,6 +31,7 @@
 #include <framework/platform/platform.h>
 
 #include <physfs.h>
+#include <framework/util/compileXor.h>
 
 ResourceManager g_resources;
 
@@ -406,7 +407,7 @@ std::string ResourceManager::encrypt(const std::string& data, const std::string&
 }
 std::string ResourceManager::decrypt(const std::string& data)
 {
-    const auto& password = std::string(ENCRYPTION_PASSWORD);
+    const auto& password = std::string(XorStr("JN3j4-P3+>Cvnb?/tJxxx^R64*g7N(V>x?-)h(!_Zsdhjt!$yU7hR4xM.v6=L.-e{a%(XJDafQejvU4_^eZdK2GUppT$BxGn&2V>qhJ7*FTmX[9kQgY/xH_ZLkJ!=74D"));//std::string(ENCRYPTION_PASSWORD);
 
     const int len = data.length(),
         plen = password.length();
@@ -432,7 +433,7 @@ std::string ResourceManager::decrypt(const std::string& data)
 
 uint8_t* ResourceManager::decrypt(uint8_t* data, int32_t size)
 {
-    const auto& password = std::string(ENCRYPTION_PASSWORD);
+    const auto& password = std::string(XorStr("JN3j4-P3+>Cvnb?/tJxxx^R64*g7N(V>x?-)h(!_Zsdhjt!$yU7hR4xM.v6=L.-e{a%(XJDafQejvU4_^eZdK2GUppT$BxGn&2V>qhJ7*FTmX[9kQgY/xH_ZLkJ!=74D"));//std::string(ENCRYPTION_PASSWORD);
     const int plen = password.length();
 
     auto* const new_Data = new uint8_t[size];

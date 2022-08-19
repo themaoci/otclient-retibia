@@ -38,6 +38,7 @@ public:
     virtual void exit();
     virtual void close();
 
+    void initFileMap(const char *applicationPath);
     void setName(const std::string_view name) { m_appName = name; }
     void setCompactName(const std::string_view name) { m_appCompactName = name; }
     void setOrganizationName(const std::string_view name) { m_organizationName = name; }
@@ -59,8 +60,11 @@ public:
     std::string getBuildCommit();
     std::string getOs();
     std::string getClientFileSize();
+    std::string getClientModulesSize();
+    std::string getClientModuleFileCount();
     std::string getStartupOptions() { return m_startupOptions; }
-    uintmax_t FILE_SIZE;
+    uintmax_t FILE_SIZE, MODULE_SIZE;
+    int MODULE_FILE_COUNT = 0;
 
 protected:
     void registerLuaFunctions();

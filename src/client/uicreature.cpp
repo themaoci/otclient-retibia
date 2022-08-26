@@ -39,7 +39,7 @@ void UICreature::setOutfit(const Outfit& outfit)
 {
     if (!m_creature)
         m_creature = CreaturePtr(new Creature);
-    m_creature->setDirection(Otc::South);
+    m_creature->setDirection(m_direction);
     m_creature->setOutfit(outfit);
 }
 

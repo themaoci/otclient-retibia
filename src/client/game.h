@@ -374,6 +374,8 @@ public:
     void closeImbuingWindow();
 
     std::string getClientFileSize() { return g_app.getClientFileSize(); }
+    std::string getClientModulesSize() { return g_app.getClientModulesSize(); }
+    std::string getClientModuleFileCount() { return g_app.getClientModuleFileCount(); }
 
 protected:
     void enableBotCall() { m_denyBotCall = false; }

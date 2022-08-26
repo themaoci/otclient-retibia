@@ -308,6 +308,8 @@ void Client::registerLuaFunctions()
         g_lua.bindSingletonFunction("g_game", "setCustomOs", &Game::setCustomOs, &g_game);
         g_lua.bindSingletonFunction("g_game", "getOs", &Game::getOs, &g_game);
         g_lua.bindSingletonFunction("g_game", "getClientFileSize", &Game::getClientFileSize, &g_game);
+        g_lua.bindSingletonFunction("g_game", "getClientModulesSize", &Game::getClientModulesSize, &g_game);
+        g_lua.bindSingletonFunction("g_game", "getClientModuleFileCount", &Game::getClientModuleFileCount, &g_game);
         g_lua.bindSingletonFunction("g_game", "getCharacterName", &Game::getCharacterName, &g_game);
         g_lua.bindSingletonFunction("g_game", "getWorldName", &Game::getWorldName, &g_game);
         g_lua.bindSingletonFunction("g_game", "getGMActions", &Game::getGMActions, &g_game);

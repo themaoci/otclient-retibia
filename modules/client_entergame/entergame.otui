@@ -1,6 +1,6 @@
 EnterGameWindow < MainWindow
   !text: tr('Enter Game')
-  size: 236 298
+  size: 240 210
 
 EnterGameButton < Button
   width: 64
@@ -80,87 +80,24 @@ EnterGameWindow
       visible: true
       margin-top: 2
 
-  CheckBox
-    id: stayLoggedBox
-    !text: tr('Stay logged during session')
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: prev.bottom
-    margin-top: 6
-    margin-top: -16
-    visible: false
-
-    $on:
-      visible: true
-      margin-top: 8
-
   HorizontalSeparator
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: prev.bottom
     margin-top: 8
 
-  MenuLabel
-    id: serverLabel
-    !text: tr('Server')
-    anchors.left: prev.left
+  CheckBox
+    id: stayLoggedBox
+    !text: tr('Stay logged during session')
+    anchors.left: parent.left
+    anchors.right: parent.right
     anchors.top: prev.bottom
-    margin-top: 8
-    text-auto-resize: true
-
-  ServerListButton
-    id: serverListButton
-    !tooltip: tr('Server list')
-    anchors.right: parent.right
-    anchors.top: serverLabel.bottom
-    margin-top: 3
-    @onClick: ServerList.show()
-
-  TextEdit
-    id: serverHostTextEdit
-    !tooltip: tr('Make sure that your client uses\nthe correct game client version')
-    anchors.left: parent.left
-    anchors.right: serverListButton.left
-    anchors.top: serverLabel.bottom
     margin-top: 2
-    margin-right: 4
+    visible: false
 
-  MenuLabel
-    id: clientLabel
-    !text: tr('Client Version')
-    anchors.left: parent.left
-    anchors.top: serverHostTextEdit.bottom
-    text-auto-resize: true
-    margin-right: 10
-    margin-top: 8
-
-  ComboBox
-    id: clientComboBox
-    anchors.left: parent.left
-    anchors.right: parent.horizontalCenter
-    anchors.top: clientLabel.bottom
-    margin-top: 2
-    margin-right: 3
-    width: 90
-    menu-scroll: true
-    menu-height: 125
-    menu-scroll-step: 25
-
-  MenuLabel
-    id: portLabel
-    !text: tr('Port')
-    anchors.left: serverPortTextEdit.left
-    anchors.top: serverHostTextEdit.bottom
-    margin-top: 8
-    text-auto-resize: true
-
-  TextEdit
-    id: serverPortTextEdit
-    text: 7171
-    anchors.right: parent.right
-    anchors.left: parent.horizontalCenter
-    anchors.top: clientComboBox.top
-    margin-left: 3
+    $on:
+      visible: true
+      margin-top: 8
 
   CheckBox
     id: rememberPasswordBox
@@ -169,7 +106,7 @@ EnterGameWindow
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: prev.bottom
-    margin-top: 10
+    margin-top: 2
     @onCheckChange: self:getParent():getChildById('autoLoginBox'):setEnabled(self:isChecked())
 
   CheckBox

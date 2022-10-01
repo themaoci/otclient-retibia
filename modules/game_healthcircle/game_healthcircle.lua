@@ -166,7 +166,7 @@ end
 
 function whenHealthChange()
     if g_game.isOnline() then
-        local healthPercent = math.floor(g_game.getLocalPlayer():getHealthPercent())
+        local healthPercent = math.floor(g_game.getLocalPlayer():getHealth() / g_game.getLocalPlayer():getMaxHealth() * 100)
 
         local yhppc = math.floor(imageSizeBroad * (1 - (healthPercent / 100)))
         local restYhppc = imageSizeBroad - yhppc

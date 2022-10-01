@@ -11,7 +11,7 @@ ChannelListLabel < Label
 MainWindow
   id: channelsWindow
   !text: tr('Channels')
-  size: 250 238
+  size: 250 280
   @onEscape: self:destroy()
 
   TextList

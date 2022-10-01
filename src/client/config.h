@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "framework/util/compileXor.h"
+
  // GENERAL
 #define SPRITE_SIZE 32
 
@@ -67,7 +69,36 @@
 #define STATIC_DURATION_PER_CHARACTER 60
 #define MIN_STATIC_TEXT_DURATION 3000
 
-// ENCRYPTION SYSTEM
+
+// DEBUG
+#define ENABLE_CONSOLE 0
+
+#define BOT_PROTECTION 0
+
+// *** ENCRYPTION SYSTEM *** \\
+
+// Should Files be packed in 1 file as zip with password
+#define ENCRYPTION_PACKED 0
+#define ARCHIVE_PASSWORD XorStr("notWorking...")
+/*
+moWcecYGCE
+9KrXbtSI0i
+ASh7WBqpZ6
+5ToyrflT3r
+yR2cVGfNSR
+RdI6Aqm4Cp
+JrJzC0kMqs
+gxtB85i3SE
+g6VEa667HT
+zIwPgv2ENS
+q5u@2v+dpv)gnSKsyTH5Rv!ATgh%^jFjIqMF)HWHNtbbW$jBtjURs6Q@y8G5pp74
+AUyF*vv@74k6Yz%a)$Mt4njwMrrKIYuDVw#s7QZGZx89y^D$6@SmhHNEIhMpHg9&
+JW+EA9KAva*AIk23NT%Q@TBRwezT^&wqfdac)CfXUB*S&X^qMz(VIY!GZtBbMa$m
+uEF42)JEYa255SY#cSA7pmN(I6J*U(KakRB&F*@kH@PQ6%rKzx(2%M)K@TaTpWxa
+TKw9bC^LdHeFU5x@^jrwu@Af4vS9!yxtsT^GP(DE*VvGn3mVTUJbB3De77s3q9$a
+B4F9Z#Vzd*MNDnFFbQ&P!pJdNWx^(Vq25GXk*h&62RM@at59d(RL%8ptmdyRek@E
+8Q4v5JZPIzKG%EA#Ct5Cd!#!IG#DImhzw5%xygT$UZjxSYR#NnV(+2B2McMTNx4%
+*/
 // Enable client encryption
 #define ENABLE_ENCRYPTION 0
 // Enable client encryption maker/builder.
@@ -75,12 +106,5 @@
 #define ENABLE_ENCRYPTION_BUILDER 0
 // for security reasons make sure you are using password with at last 100+ characters
 // this was used in resourcemanager.cpp at lines 409 and 435 i replaced that with XOR compilation time encyption which is used by cheat devs
-#define ENCRYPTION_PASSWORD "}K+(Fs&=}78Tk_ArY[(nUq3kRLCFHejdDkHj{Lz2X-gMRA84.Zq?n(b8_a_s(^vv)eQAJEL8}3=YNc}BfzLYm&2UCTcNq.ZDU9!C%H*X_vjX?KcatM}![sfH?sm}$)rc"
+#define ENCRYPTION_PASSWORD XorStr("q5u@2v+dpv)gnSKsyTH5Rv!ATgh%^jFjIqMF)HWHNtbbW$jBtjURs6Q@y8G5pp74AUyF*vv@74k6Yz%a)$Mt4njwMrrKIYuDVw#s7QZGZx89y^D$6@SmhHNEIhMpHg9&JW+EA9KAva*AIk23NT%Q@TBRwezT^&wqfdac)CfXUB*S&X^qMz(VIY!GZtBbMa$muEF42)JEYa255SY#c7pmN(I6J*U(KakRB&F*@kH@PQ6%rKzx(2%M)K@TaTpWxaTKw9bC^LdHeFU5x@^jrwu@Af4vS9!yxtsT^GP(DE*VvGn3mVTUJbB3De77s3q9$aB4F9Z#Vzd*MNDnFFbQ&P!pJdNWx^(Vq25GXk*h&62RM@at59d(RL%8ptmdyRek@E8Q4v5JZPIzKG%EA#Ct5Cd!#!IG#DImhzw5%xygT$UZjxSYR#NnV(+2B2McMTNx4%")
 
-/*
-first password is fake and will be a bait
-}K+(Fs&=}78Tk_ArY[(nUq3kRLCFHejdDkHj{Lz2X-gMRA84.Zq?n(b8_a_s(^vv)eQAJEL8}3=YNc}BfzLYm&2UCTcNq.ZDU9!C%H*X_vjX?KcatM}![sfH?sm}$)rc
-second password will be used in decryption
-XorStr("JN3j4-P3+>Cvnb?/tJxxx^R64*g7N(V>x?-)h(!_Zsdhjt!$yU7hR4xM.v6=L.-e{a%(XJDafQejvU4_^eZdK2GUppT$BxGn&2V>qhJ7*FTmX[9kQgY/xH_ZLkJ!=74D")
-*/
-//XorStr("1234567890!@#$%^&*()")

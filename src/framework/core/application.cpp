@@ -56,7 +56,24 @@ void exitSignalHandler(int sig)
     }
 }
 
-void Application::initFileMap(const char *applicationPath) {
+void Application::initFileMap(
+#if ENCRYPTION_PACKED == 1
+    const char*
+#else
+    const char *applicationPath
+#endif
+) {
+#if ENCRYPTION_PACKED == 1
+    g_app.MODULE_FILE_COUNT = 1;
+    
+    uintmax_t moduleRTsize = 0;
+    try {
+        moduleRTsize = std::filesystem::file_size(g_resources.getWorkDir() + "modules.zip");
+        std::cout << "modules size : " << moduleRTsize << std::endl;
+    } catch(...) {}
+
+    g_app.MODULE_SIZE = moduleRTsize;
+#else
     g_app.FILE_SIZE = std::filesystem::file_size(applicationPath);
     g_app.MODULE_SIZE = 0;
     g_app.MODULE_FILE_COUNT = 0;
@@ -70,6 +87,7 @@ void Application::initFileMap(const char *applicationPath) {
             g_app.MODULE_SIZE += entry.file_size();
         }
     }
+#endif
 }
 
 void Application::init(std::vector<std::string>& args)

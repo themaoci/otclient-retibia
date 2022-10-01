@@ -242,10 +242,10 @@ extern DrawPoolManager g_drawPool;
 class DrawBuffer
 {
 public:
-    DrawBuffer(DrawPool::DrawOrder order, bool agroup = true) : m_order(order), m_agroup(agroup) {}
+    DrawBuffer(DrawPool::DrawOrder order, bool agroup = true, bool isStatic = true) : m_agroup(agroup), m_order(order), m_static(isStatic) {}
     void agroup(bool v) { m_agroup = v; }
     void setOrder(DrawPool::DrawOrder order) { m_order = order; }
-
+    bool isStatic() { return m_static; }
 private:
     static DrawBufferPtr createTemporaryBuffer(DrawPool::DrawOrder order)
     {
@@ -269,6 +269,7 @@ private:
 
     int m_i{ -1 };
     bool m_agroup{ true };
+    bool m_static{ true };
     DrawPool::DrawOrder m_order{ DrawPool::DrawOrder::FIRST };
     Point m_ref;
     size_t m_stateHash{ 0 };

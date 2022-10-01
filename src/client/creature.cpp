@@ -106,7 +106,7 @@ void Creature::internalDrawOutfit(Point dest, float scaleFactor, bool animateWal
 
     const bool isNotBlank = textureType != TextureType::ALL_BLANK,
         canDrawShader = isNotBlank;
-
+    animateWalk = true;
     int animationPhase = 0;
 
     // outfit is a real creature
@@ -255,8 +255,7 @@ void Creature::drawInformation(const MapPosInfo& mapRect, const Point& dest, flo
             g_drawPool.addFilledRect(healthRect, fillColor);
 
             if (drawFlags & Otc::DrawManaBar && isLocalPlayer()) {
-                const LocalPlayerPtr player = g_game.getLocalPlayer();
-                if (player) {
+                if (const auto& player = g_game.getLocalPlayer()) {
                     backgroundRect.moveTop(backgroundRect.bottom());
 
                     g_drawPool.addFilledRect(backgroundRect, Color::black);

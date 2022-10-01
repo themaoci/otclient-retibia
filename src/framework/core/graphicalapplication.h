@@ -44,15 +44,23 @@ public:
     int getFps() { return m_frameCounter.getFps(); }
     int getMaxFps() { return m_frameCounter.getMaxFps(); }
 
+    bool isPacked()
+    {
+#if ENCRYPTION_PACKED == 1
+        return true;
+#else
+        return false;
+#endif
+    }
     bool isOnInputEvent() { return m_onInputEvent; }
-    bool canOptimize() { return m_optimize && getFps() < 60; }
+    bool mustOptimize(bool critical = false) { return m_optimize && getFps() < (critical ? 55 : 60); }
     bool isForcedEffectOptimization() { return m_forceEffectOptimization; }
 
     void optimize(const bool optimize) { m_optimize = optimize; }
 
     void forceEffectOptimization(const bool optimize) { m_forceEffectOptimization = optimize; }
     void setDrawEffectOnTop(const bool draw) { m_drawEffectOnTop = draw; }
-    bool isDrawingEffectsOnTop() { return m_drawEffectOnTop || canOptimize(); }
+    bool isDrawingEffectsOnTop() { return m_drawEffectOnTop || mustOptimize(); }
 
     void repaint();
 

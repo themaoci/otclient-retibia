@@ -297,7 +297,7 @@ void Game::processOpenContainer(int containerId, const ItemPtr& containerItem, c
 
 void Game::processCloseContainer(int containerId)
 {
-    if (const ContainerPtr container = getContainer(containerId)) {
+    if (const auto& container = getContainer(containerId)) {
         m_containers[containerId] = nullptr;
         container->onClose();
     }
@@ -305,19 +305,19 @@ void Game::processCloseContainer(int containerId)
 
 void Game::processContainerAddItem(int containerId, const ItemPtr& item, int slot)
 {
-    if (const ContainerPtr container = getContainer(containerId))
+    if (const auto& container = getContainer(containerId))
         container->onAddItem(item, slot);
 }
 
 void Game::processContainerUpdateItem(int containerId, int slot, const ItemPtr& item)
 {
-    if (const ContainerPtr container = getContainer(containerId))
+    if (const auto& container = getContainer(containerId))
         container->onUpdateItem(slot, item);
 }
 
 void Game::processContainerRemoveItem(int containerId, int slot, const ItemPtr& lastItem)
 {
-    if (const ContainerPtr container = getContainer(containerId))
+    if (const auto& container = getContainer(containerId))
         container->onRemoveItem(slot, lastItem);
 }
 
@@ -431,7 +431,7 @@ void Game::processOpenOutfitWindow(const Outfit& currentOutfit, const std::vecto
     g_lua.callGlobalField("g_game", "onOpenOutfitWindow", virtualOutfitCreature, outfitList, virtualMountCreature, mountList);
 }
 
-void Game::processOpenNpcTrade(const std::vector<std::tuple<ItemPtr, std::string, int, int, int> >& items)
+void Game::processOpenNpcTrade(const std::vector<std::tuple<ItemPtr, std::string, int, int, int, bool, int> >& items)
 {
     g_lua.callGlobalField("g_game", "onOpenNpcTrade", items);
 }
@@ -587,10 +587,9 @@ bool Game::walk(const Otc::Direction direction, bool isKeyDown /*= false*/)
     }
 
     const Position toPos = m_localPlayer->getPosition().translatedToDirection(direction);
-    const TilePtr toTile = g_map.getTile(toPos);
 
     // only do prewalks to walkable tiles (like grounds and not walls)
-    if (toTile && toTile->isWalkable()) {
+    if (const auto& toTile = g_map.getTile(toPos); toTile && toTile->isWalkable()) {
         m_localPlayer->preWalk(direction);
     } else {
         // check if can walk to a lower floor
@@ -600,8 +599,7 @@ bool Game::walk(const Otc::Direction direction, bool isKeyDown /*= false*/)
                 return false;
 
             // check walk to another floor (e.g: when above 3 parcels)
-            const TilePtr toTile = g_map.getTile(pos);
-            if (toTile && toTile->hasElevation(3))
+            if (const auto& toTile = g_map.getTile(pos); toTile && toTile->hasElevation(3))
                 return true;
 
             return false;
@@ -617,8 +615,7 @@ bool Game::walk(const Otc::Direction direction, bool isKeyDown /*= false*/)
             if (!pos.up())
 
                 return false;
-            const TilePtr toTile = g_map.getTile(pos);
-            if (!toTile || !toTile->isWalkable())
+            if (const auto& toTile = g_map.getTile(pos); toTile && toTile->hasElevation(3))
                 return false;
 
             return true;
@@ -664,11 +661,10 @@ void Game::autoWalk(std::vector<Otc::Direction> dirs, Position startPos)
     const Otc::Direction direction = *it;
 
     const TilePtr toTile = g_map.getTile(startPos.translatedToDirection(direction));
-    if (startPos == m_localPlayer->m_position && toTile && toTile->isWalkable() && !m_localPlayer->isWalking() && m_localPlayer->canWalk(true)) {
-        m_localPlayer->preWalk(direction);
-
-        forceWalk(direction);
-        dirs.erase(it);
+    if (const auto& toTile = g_map.getTile(startPos.translatedToDirection(direction))) {
+        if (startPos == m_localPlayer->m_lastPrewalkDestination && toTile->isWalkable() && !m_localPlayer->isWalking() && m_localPlayer->canWalk(true)) {
+            m_localPlayer->preWalk(direction);
+        }
     }
 
     g_lua.callGlobalField("g_game", "onAutoWalk", dirs);
@@ -847,12 +843,10 @@ void Game::useInventoryItemWith(int itemId, const ThingPtr& toThing)
 ItemPtr Game::findItemInContainers(uint32_t itemId, int subType)
 {
     for (auto& it : m_containers) {
-        const ContainerPtr& container = it.second;
-
-        if (container) {
-            ItemPtr item = container->findItemById(itemId, subType);
-            if (item != nullptr)
+        if (const auto& container = it.second) {
+            if (const auto& item = container->findItemById(itemId, subType)) {
                 return item;
+            }
         }
     }
 
@@ -1247,20 +1241,20 @@ void Game::inspectNpcTrade(const ItemPtr& item)
     m_protocolGame->sendInspectNpcTrade(item->getId(), item->getCount());
 }
 
-void Game::buyItem(const ItemPtr& item, int amount, bool ignoreCapacity, bool buyWithBackpack)
+void Game::buyItem(const ItemPtr& item, int amount, bool ignoreCapacity, bool buyWithBackpack, int specialId)
 {
     if (!canPerformGameAction() || !item)
         return;
 
-    m_protocolGame->sendBuyItem(item->getId(), item->getCountOrSubType(), amount, ignoreCapacity, buyWithBackpack);
+    m_protocolGame->sendBuyItem(item->getId(), item->getCountOrSubType(), amount, ignoreCapacity, buyWithBackpack, specialId);
 }
 
-void Game::sellItem(const ItemPtr& item, int amount, bool ignoreEquipped)
+void Game::sellItem(const ItemPtr& item, int amount, bool ignoreEquipped, int specialId)
 {
     if (!canPerformGameAction() || !item)
         return;
 
-    m_protocolGame->sendSellItem(item->getId(), item->getSubType(), amount, ignoreEquipped);
+    m_protocolGame->sendSellItem(item->getId(), item->getSubType(), amount, ignoreEquipped, specialId);
 }
 
 void Game::closeNpcTrade()
@@ -1501,7 +1495,7 @@ void Game::changeMapAwareRange(int xrange, int yrange)
 
 bool Game::checkBotProtection()
 {
-#ifdef BOT_PROTECTION
+#if BOT_PROTECTION == 1
     // accepts calls comming from a stacktrace containing only C++ functions,
     // if the stacktrace contains a lua function, then only accept if the engine is processing an input event
     if (m_denyBotCall && g_lua.isInCppCallback() && !g_app.isOnInputEvent()) {
@@ -1802,7 +1796,9 @@ Otc::OperatingSystem_t Game::getOs()
 
 void Game::leaveMarket()
 {
+    enableBotCall();
     m_protocolGame->sendMarketLeave();
+    disableBotCall();
     g_lua.callGlobalField("g_game", "onMarketLeave");
 }
 

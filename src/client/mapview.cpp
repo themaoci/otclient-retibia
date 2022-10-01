@@ -686,17 +686,18 @@ uint8_t MapView::calcFirstVisibleFloor(bool checkLimitsFloorsView)
                         const auto isLookPossible = g_map.isLookPossible(pos);
                         while (coveredPos.coveredUp() && upperPos.up() && upperPos.z >= firstFloor) {
                             // check tiles physically above
-                            TilePtr tile = g_map.getTile(upperPos);
-                            if (tile && tile->limitsFloorsView(!isLookPossible)) {
-                                firstFloor = upperPos.z + 1;
-                                break;
+                            if (const TilePtr& tile = g_map.getTile(upperPos)) {
+                                if (tile->limitsFloorsView(!isLookPossible)) {
+                                    firstFloor = upperPos.z + 1;
+                                    break;
+                                }
                             }
-
                             // check tiles geometrically above
-                            tile = g_map.getTile(coveredPos);
-                            if (tile && tile->limitsFloorsView(isLookPossible)) {
-                                firstFloor = coveredPos.z + 1;
-                                break;
+                            if (const TilePtr& tile = g_map.getTile(coveredPos)) {
+                                if (tile->limitsFloorsView(isLookPossible)) {
+                                    firstFloor = coveredPos.z + 1;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -737,23 +738,18 @@ uint8_t MapView::calcLastVisibleFloor()
 TilePtr MapView::getTopTile(Position tilePos)
 {
     // we must check every floor, from top to bottom to check for a clickable tile
-    TilePtr tile;
-
     if (m_floorViewMode == ALWAYS_WITH_TRANSPARENCY && tilePos.isInRange(m_lastCameraPosition, TRANSPARENT_FLOOR_VIEW_RANGE, TRANSPARENT_FLOOR_VIEW_RANGE))
-        tile = g_map.getTile(tilePos);
-    else {
-        tilePos.coveredUp(tilePos.z - m_cachedFirstVisibleFloor);
-        for (uint8_t i = m_cachedFirstVisibleFloor; i <= m_floorMax; ++i) {
-            tile = g_map.getTile(tilePos);
-            if (tile && tile->isClickable())
-                break;
+        return g_map.getTile(tilePos);
 
-            tilePos.coveredDown();
-            tile = nullptr;
-        }
+    tilePos.coveredUp(tilePos.z - m_cachedFirstVisibleFloor);
+    for (uint8_t i = m_cachedFirstVisibleFloor; i <= m_floorMax; ++i) {
+        const TilePtr& tile = g_map.getTile(tilePos);
+        if (tile && tile->isClickable())
+            return tile;
+
+        tilePos.coveredDown();
     }
-
-    return tile;
+    return nullptr;
 }
 
 Position MapView::getCameraPosition()
@@ -766,7 +762,7 @@ Position MapView::getCameraPosition()
 
 void MapView::setShader(const PainterShaderProgramPtr& shader, float fadein, float fadeout)
 {
-    if ((m_shader == shader))
+    if (m_shader == shader)
         return;
 
     if (fadeout > 0.0f && m_shader) {
@@ -786,8 +782,8 @@ void MapView::setShader(const PainterShaderProgramPtr& shader, float fadein, flo
 
 void MapView::setDrawLights(bool enable)
 {
-    auto* pool = g_drawPool.get<DrawPoolFramed>(DrawPoolType::LIGHT);
-    if (pool) pool->setEnable(enable);
+    if (auto* pool = g_drawPool.get<DrawPoolFramed>(DrawPoolType::LIGHT))
+        pool->setEnable(enable);
 
     if (enable) {
         if (m_lightView)

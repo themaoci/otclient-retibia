@@ -130,7 +130,7 @@ protected:
                                  const std::vector<std::tuple<int, std::string> >& mountList);
 
     // npc trade
-    static void processOpenNpcTrade(const std::vector<std::tuple<ItemPtr, std::string, int, int, int> >& items);
+    static void processOpenNpcTrade(const std::vector<std::tuple<ItemPtr, std::string, int, int, int, bool, int> >& items);
     static void processPlayerGoods(int money, const std::vector<std::tuple<ItemPtr, int> >& goods);
     static void processCloseNpcTrade();
 
@@ -244,8 +244,8 @@ public:
 
     // npc trade related
     void inspectNpcTrade(const ItemPtr& item);
-    void buyItem(const ItemPtr& item, int amount, bool ignoreCapacity, bool buyWithBackpack);
-    void sellItem(const ItemPtr& item, int amount, bool ignoreEquipped);
+    void buyItem(const ItemPtr& item, int amount, bool ignoreCapacity, bool buyWithBackpack, int specialId);
+    void sellItem(const ItemPtr& item, int amount, bool ignoreEquipped, int specialId);
     void closeNpcTrade();
 
     // player trade related

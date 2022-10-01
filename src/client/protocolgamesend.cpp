@@ -51,7 +51,6 @@ void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string_view buf
 void ProtocolGame::sendLoginPacket(uint32_t challengeTimestamp, uint8_t challengeRandom)
 {
     const OutputMessagePtr msg(new OutputMessage);
-    g_logger.info("sendLoginPacket Client cpp");
     msg->addU8(Proto::ClientPendingGame); // 1
     msg->addU16(g_game.getOs());// 2
     msg->addU16(g_game.getProtocolVersion());// 2
@@ -321,7 +320,7 @@ void ProtocolGame::sendInspectNpcTrade(int itemId, int count)
     send(msg);
 }
 
-void ProtocolGame::sendBuyItem(int itemId, int subType, int amount, bool ignoreCapacity, bool buyWithBackpack)
+void ProtocolGame::sendBuyItem(int itemId, int subType, int amount, bool ignoreCapacity, bool buyWithBackpack, int specialId)
 {
     const OutputMessagePtr msg(new OutputMessage);
     msg->addU8(Proto::ClientBuyItem);
@@ -330,10 +329,11 @@ void ProtocolGame::sendBuyItem(int itemId, int subType, int amount, bool ignoreC
     msg->addU8(amount);
     msg->addU8(ignoreCapacity ? 0x01 : 0x00);
     msg->addU8(buyWithBackpack ? 0x01 : 0x00);
+    msg->addU16(specialId);
     send(msg);
 }
 
-void ProtocolGame::sendSellItem(int itemId, int subType, int amount, bool ignoreEquipped)
+void ProtocolGame::sendSellItem(int itemId, int subType, int amount, bool ignoreEquipped, int specialId)
 {
     const OutputMessagePtr msg(new OutputMessage);
     msg->addU8(Proto::ClientSellItem);
@@ -344,6 +344,7 @@ void ProtocolGame::sendSellItem(int itemId, int subType, int amount, bool ignore
     else
         msg->addU8(amount);
     msg->addU8(ignoreEquipped ? 0x01 : 0x00);
+    msg->addU16(specialId);
     send(msg);
 }
 
@@ -789,6 +790,9 @@ void ProtocolGame::sendBugReport(const std::string_view comment)
 {
     const OutputMessagePtr msg(new OutputMessage);
     msg->addU8(Proto::ClientBugReport);
+    if (g_game.getProtocolVersion() > 1000) {
+        msg->addU8(3); // category
+    }
     msg->addString(comment);
     send(msg);
 }

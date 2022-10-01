@@ -25,18 +25,23 @@
 #include <framework/core/resourcemanager.h>
 #include <framework/luaengine/luainterface.h>
 #include "framework/util/compileXor.h"
+#include <physfs.h>
 
 int main(int argc, const char* argv[])
 {
+#if ENABLE_CONSOLE == 1
+    AllocConsole();
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+#endif
     std::vector<std::string> args(argv, argv + argc);
-    
     // initialize some security things
-    g_app.initFileMap(argv[0]);
+    //g_app.initFileMap(argv[0]);
 
     // setup application name and version
     g_app.setName(XorStr("ReTibia Client"));
-    g_app.setCompactName(XorStr("retibia"));
-    g_app.setOrganizationName(XorStr("retibia"));
+    g_app.setCompactName(XorStr("OTC"));
+    g_app.setOrganizationName(XorStr("ReTibia"));
 
 #if ENABLE_ENCRYPTION == 1 && ENABLE_ENCRYPTION_BUILDER == 1
     if (std::find(args.begin(), args.end(), "--encrypt") != args.end()) {
@@ -55,14 +60,25 @@ int main(int argc, const char* argv[])
     g_app.init(args);
     Client::init(args);
 
-
     // find script init.lua and run it
-    if (!g_resources.discoverWorkDir(XorStr("init.lua")))
+    if (!g_resources.discoverWorkDir(g_resources.getWorkDir() + "otclient.exe"))
         g_logger.fatal(XorStr("Unable to find work directory, the application cannot be initialized."));
 
-    if (!g_lua.safeRunScript(XorStr("init.lua")))
-        g_logger.fatal(XorStr("Unable to run script init.lua!"));
+#if ENCRYPTION_PACKED == 1
+    g_resources.searchAndAddPackages("/", ".zip");
 
+    if (!g_lua.safeRunScript("init.lua"))
+        g_logger.fatal("Unable to run script init.lua!");
+#else
+    if (!g_lua.safeRunScript("init.lua"))
+    {
+        if (!g_resources.addSearchPath(g_resources.getWorkDir() + "data", true))
+            g_logger.fatal("Unable to add data to the search path");
+
+        if (!g_lua.safeRunScript("init.lua"))
+            g_logger.fatal("Unable to run script init.lua!");
+    }
+#endif
     // the run application main loop
     g_app.run();
 

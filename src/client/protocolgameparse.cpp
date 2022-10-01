@@ -789,8 +789,7 @@ void ProtocolGame::parsePlayerHelpers(const InputMessagePtr& msg)
     const uint32_t id = msg->getU32();
     const int helpers = msg->getU16();
 
-    const CreaturePtr creature = g_map.getCreatureById(id);
-    if (creature)
+    if (g_map.getCreatureById(id))
         Game::processPlayerHelpers(helpers);
     else
         g_logger.traceError(stdext::format("could not get creature with id %d", id));
@@ -998,21 +997,21 @@ void ProtocolGame::parseTileAddThing(const InputMessagePtr& msg)
     if (g_game.getClientVersion() >= 841)
         stackPos = msg->getU8();
 
-    const ThingPtr thing = getThing(msg);
+    const auto& thing = getThing(msg);
     g_map.addThing(thing, pos, stackPos);
 }
 
 void ProtocolGame::parseTileTransformThing(const InputMessagePtr& msg)
 {
-    const ThingPtr thing = getMappedThing(msg);
-    const ThingPtr newThing = getThing(msg);
+    const auto& thing = getMappedThing(msg);
+    const auto& newThing = getThing(msg);
 
     if (!thing) {
         g_logger.traceError("no thing");
         return;
     }
 
-    const Position pos = thing->getPosition();
+    const auto& pos = thing->getPosition();
     const int stackpos = thing->getStackPos();
 
     if (!g_map.removeThing(thing)) {
@@ -1025,7 +1024,7 @@ void ProtocolGame::parseTileTransformThing(const InputMessagePtr& msg)
 
 void ProtocolGame::parseTileRemoveThing(const InputMessagePtr& msg)
 {
-    const ThingPtr thing = getMappedThing(msg);
+    const auto& thing = getMappedThing(msg);
     if (!thing) {
         g_logger.traceError("no thing");
         return;
@@ -1037,8 +1036,8 @@ void ProtocolGame::parseTileRemoveThing(const InputMessagePtr& msg)
 
 void ProtocolGame::parseCreatureMove(const InputMessagePtr& msg)
 {
-    const ThingPtr thing = getMappedThing(msg);
-    const Position newPos = getPosition(msg);
+    const auto& thing = getMappedThing(msg);
+    const auto& newPos = getPosition(msg);
 
     if (!thing || !thing->isCreature()) {
         g_logger.traceError("no creature found to move");
@@ -1151,7 +1150,7 @@ void ProtocolGame::parseRemoveInventoryItem(const InputMessagePtr& msg)
 
 void ProtocolGame::parseOpenNpcTrade(const InputMessagePtr& msg)
 {
-    std::vector<std::tuple<ItemPtr, std::string, int, int, int>> items;
+    std::vector<std::tuple<ItemPtr, std::string, int, int, int, bool, int>> items;
 
     if (g_game.getFeature(Otc::GameNameOnNpcTrade))
         const auto npcName = msg->getString();
@@ -1170,16 +1169,20 @@ void ProtocolGame::parseOpenNpcTrade(const InputMessagePtr& msg)
 
     for (int i = 0; i < listCount; ++i) {
         const uint16_t itemId = msg->getU16();
-        const uint8_t count = msg->getU8();
-
+        const uint16_t count = msg->getU16();
+        const uint16_t specialId = msg->getU16();
+        
         ItemPtr item = Item::create(itemId);
-        item->setCountOrSubType(count);
 
         const auto name = msg->getString();
         int weight = msg->getU32();
         int buyPrice = msg->getU32();
         int sellPrice = msg->getU32();
-        items.emplace_back(item, name, weight, buyPrice, sellPrice);
+        int funcSell = msg->getU32();
+        if (funcSell != 0) weight = 0;
+        item->setCountOrSubType(count);
+
+        items.emplace_back(item, name, weight, buyPrice, sellPrice, (bool)funcSell, specialId);
     }
 
     Game::processOpenNpcTrade(items);
@@ -2521,45 +2524,42 @@ Outfit ProtocolGame::getOutfit(const InputMessagePtr& msg, bool parseMount/* = t
 
 ThingPtr ProtocolGame::getThing(const InputMessagePtr& msg)
 {
-    ThingPtr thing;
-
     const int id = msg->getU16();
 
     if (id == 0)
-        throw Exception("invalid thing id");
-    else if (id == Proto::UnknownCreature || id == Proto::OutdatedCreature || id == Proto::Creature)
-        thing = getCreature(msg, id);
-    else if (id == Proto::StaticText) // otclient only
-        thing = getStaticText(msg, id);
-    else // item
-        thing = getItem(msg, id);
+        throw Exception("invalid thing id: " + id);
+    if (id == Proto::UnknownCreature || id == Proto::OutdatedCreature || id == Proto::Creature)
+        return getCreature(msg, id);
 
-    return thing;
+    if (id == Proto::StaticText) // otclient only
+        return getStaticText(msg, id);
+
+    return getItem(msg, id); // item
 }
 
 ThingPtr ProtocolGame::getMappedThing(const InputMessagePtr& msg)
 {
-    ThingPtr thing;
     const uint16_t x = msg->getU16();
 
     if (x != 0xffff) {
-        Position pos;
-        pos.x = x;
-        pos.y = msg->getU16();
-        pos.z = msg->getU8();
+        const uint16_t y = msg->getU16();
+        const uint8_t z = msg->getU8();
         const uint8_t stackpos = msg->getU8();
         assert(stackpos != UINT8_MAX);
-        thing = g_map.getThing(pos, stackpos);
-        if (!thing)
-            g_logger.traceError(stdext::format("no thing at pos:%s, stackpos:%d", stdext::to_string(pos), stackpos));
+        const Position& pos{ x, y, z };
+        if (const auto& thing = g_map.getThing(pos, stackpos))
+            return thing;
+
+        g_logger.traceError(stdext::format("no thing at pos:%s, stackpos:%d", stdext::to_string(pos), stackpos));
     } else {
         const uint32_t id = msg->getU32();
-        thing = g_map.getCreatureById(id);
-        if (!thing)
-            g_logger.traceError(stdext::format("no creature with id %u", id));
+        if (const auto& thing = g_map.getCreatureById(id))
+            return thing;
+
+        g_logger.traceError(stdext::format("no creature with id %u", id));
     }
 
-    return thing;
+    return nullptr;
 }
 
 CreaturePtr ProtocolGame::getCreature(const InputMessagePtr& msg, int type)

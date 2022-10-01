@@ -244,7 +244,7 @@ private:
         m_floorMax{ 0 },
         m_antiAliasingMode;
 
-    uint16_t m_floorFading = 500;
+    uint16_t m_floorFading = 250;
 
     float m_minimumAmbientLight{ 0 },
         m_fadeInTime{ 0 },

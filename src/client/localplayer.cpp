@@ -78,9 +78,8 @@ void LocalPlayer::walk(const Position& oldPos, const Position& newPos)
 void LocalPlayer::preWalk(Otc::Direction direction)
 {
     // avoid reanimating prewalks
-    if (m_preWalking) {
+    if (m_preWalking)
         return;
-    }
 
     m_preWalking = true;
 
@@ -99,9 +98,9 @@ bool LocalPlayer::retryAutoWalk()
             if (m_autoWalkContinueEvent)
                 m_autoWalkContinueEvent->cancel();
 
-            m_autoWalkContinueEvent = g_dispatcher.scheduleEvent([capture0 = asLocalPlayer(), this] {
-                capture0->autoWalk(m_autoWalkDestination, true);
-            }, 200);
+            m_autoWalkContinueEvent = g_dispatcher.scheduleEvent(
+                [capture0 = asLocalPlayer(), this]{ capture0->autoWalk(m_autoWalkDestination, true); }, 200
+            );
             m_autoWalkRetries += 1;
 
             return true;
@@ -251,12 +250,12 @@ void LocalPlayer::onPositionChange(const Position& newPos, const Position& oldPo
 
 void LocalPlayer::setStates(int states)
 {
-    if (m_states != states) {
-        const int oldStates = m_states;
-        m_states = states;
+    if (m_states == states)
+        return;
+    const int oldStates = m_states;
+    m_states = states;
 
-        callLuaField("onStatesChange", states, oldStates);
-    }
+    callLuaField("onStatesChange", states, oldStates);
 }
 
 void LocalPlayer::setSkill(Otc::Skill skill, int level, int levelPercent)
@@ -269,12 +268,13 @@ void LocalPlayer::setSkill(Otc::Skill skill, int level, int levelPercent)
     const int oldLevel = m_skillsLevel[skill];
     const int oldLevelPercent = m_skillsLevelPercent[skill];
 
-    if (level != oldLevel || levelPercent != oldLevelPercent) {
-        m_skillsLevel[skill] = level;
-        m_skillsLevelPercent[skill] = levelPercent;
+    if (level == oldLevel && levelPercent == oldLevelPercent)
+        return;
 
-        callLuaField("onSkillChange", skill, level, levelPercent, oldLevel, oldLevelPercent);
-    }
+    m_skillsLevel[skill] = level;
+    m_skillsLevelPercent[skill] = levelPercent;
+
+    callLuaField("onSkillChange", skill, level, levelPercent, oldLevel, oldLevelPercent);
 }
 
 void LocalPlayer::setBaseSkill(Otc::Skill skill, int baseLevel)
@@ -285,11 +285,12 @@ void LocalPlayer::setBaseSkill(Otc::Skill skill, int baseLevel)
     }
 
     const int oldBaseLevel = m_skillsBaseLevel[skill];
-    if (baseLevel != oldBaseLevel) {
-        m_skillsBaseLevel[skill] = baseLevel;
+    if (baseLevel == oldBaseLevel)
+        return;
 
-        callLuaField("onBaseSkillChange", skill, baseLevel, oldBaseLevel);
-    }
+    m_skillsBaseLevel[skill] = baseLevel;
+
+    callLuaField("onBaseSkillChange", skill, baseLevel, oldBaseLevel);
 }
 
 void LocalPlayer::setHealth(double health, double maxHealth)
@@ -303,7 +304,7 @@ void LocalPlayer::setHealth(double health, double maxHealth)
         callLuaField("onHealthChange", health, maxHealth, oldHealth, oldMaxHealth);
 
         // cannot walk while dying
-        if (health == 0) {
+        if (isDead()) {
             if (isPreWalking())
                 stopWalk();
             lockWalk();
@@ -313,68 +314,68 @@ void LocalPlayer::setHealth(double health, double maxHealth)
 
 void LocalPlayer::setFreeCapacity(double freeCapacity)
 {
-    if (m_freeCapacity != freeCapacity) {
-        const double oldFreeCapacity = m_freeCapacity;
-        m_freeCapacity = freeCapacity;
+    if (m_freeCapacity == freeCapacity)
+        return;
+    const double oldFreeCapacity = m_freeCapacity;
+    m_freeCapacity = freeCapacity;
 
-        callLuaField("onFreeCapacityChange", freeCapacity, oldFreeCapacity);
-    }
+    callLuaField("onFreeCapacityChange", freeCapacity, oldFreeCapacity);
 }
 
 void LocalPlayer::setTotalCapacity(double totalCapacity)
 {
-    if (m_totalCapacity != totalCapacity) {
-        const double oldTotalCapacity = m_totalCapacity;
-        m_totalCapacity = totalCapacity;
+    if (m_totalCapacity == totalCapacity)
+        return;
+    const double oldTotalCapacity = m_totalCapacity;
+    m_totalCapacity = totalCapacity;
 
-        callLuaField("onTotalCapacityChange", totalCapacity, oldTotalCapacity);
-    }
+    callLuaField("onTotalCapacityChange", totalCapacity, oldTotalCapacity);
 }
 
 void LocalPlayer::setExperience(double experience)
 {
-    if (m_experience != experience) {
-        const double oldExperience = m_experience;
-        m_experience = experience;
+    if (m_experience == experience)
+        return;
+    const double oldExperience = m_experience;
+    m_experience = experience;
 
-        callLuaField("onExperienceChange", experience, oldExperience);
-    }
+    callLuaField("onExperienceChange", experience, oldExperience);
 }
 
 void LocalPlayer::setLevel(double level, double levelPercent)
 {
-    if (m_level != level || m_levelPercent != levelPercent) {
-        const double oldLevel = m_level;
-        const double oldLevelPercent = m_levelPercent;
-        m_level = level;
-        m_levelPercent = levelPercent;
+    if (m_level == level && m_levelPercent == levelPercent)
+        return;
+    const double oldLevel = m_level;
+    const double oldLevelPercent = m_levelPercent;
+    m_level = level;
+    m_levelPercent = levelPercent;
 
-        callLuaField("onLevelChange", level, levelPercent, oldLevel, oldLevelPercent);
-    }
+    callLuaField("onLevelChange", level, levelPercent, oldLevel, oldLevelPercent);
 }
 
 void LocalPlayer::setMana(double mana, double maxMana)
 {
-    if (m_mana != mana || m_maxMana != maxMana) {
-        const double oldMana = m_mana;
-        const double oldMaxMana = m_maxMana;
-        m_mana = mana;
-        m_maxMana = maxMana;
+    if (m_mana == mana && m_maxMana == maxMana)
+        return;
+    const double oldMana = m_mana;
+    const double oldMaxMana = m_maxMana;
+    m_mana = mana;
+    m_maxMana = maxMana;
 
-        callLuaField("onManaChange", mana, maxMana, oldMana, oldMaxMana);
-    }
+    callLuaField("onManaChange", mana, maxMana, oldMana, oldMaxMana);
 }
 
 void LocalPlayer::setMagicLevel(double magicLevel, double magicLevelPercent)
 {
-    if (m_magicLevel != magicLevel || m_magicLevelPercent != magicLevelPercent) {
-        const double oldMagicLevel = m_magicLevel;
-        const double oldMagicLevelPercent = m_magicLevelPercent;
-        m_magicLevel = magicLevel;
-        m_magicLevelPercent = magicLevelPercent;
+    if (m_magicLevel == magicLevel && m_magicLevelPercent == magicLevelPercent)
+        return;
+    const double oldMagicLevel = m_magicLevel;
+    const double oldMagicLevelPercent = m_magicLevelPercent;
+    m_magicLevel = magicLevel;
+    m_magicLevelPercent = magicLevelPercent;
 
-        callLuaField("onMagicLevelChange", magicLevel, magicLevelPercent, oldMagicLevel, oldMagicLevelPercent);
-    }
+    callLuaField("onMagicLevelChange", magicLevel, magicLevelPercent, oldMagicLevel, oldMagicLevelPercent);
 }
 
 void LocalPlayer::setBaseMagicLevel(double baseMagicLevel)

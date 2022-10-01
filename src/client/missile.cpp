@@ -53,6 +53,7 @@ void Missile::setPath(const Position& fromPosition, const Position& toPosition)
     m_delta *= SPRITE_SIZE;
     m_animationTimer.restart();
     m_distance = fromPosition.distance(toPosition);
+    m_drawBuffer = std::make_shared<DrawBuffer>(DrawPool::DrawOrder::FIFTH);
 
     { // Update Pattern
         if (m_direction == Otc::NorthWest) {
@@ -89,7 +90,7 @@ void Missile::setPath(const Position& fromPosition, const Position& toPosition)
     const auto self = asMissile();
     g_dispatcher.scheduleEvent([self] { g_map.removeThing(self); }, m_duration);
 
-    generateBuffer();
+    //generateBuffer();
 }
 
 void Missile::setId(uint32_t id)

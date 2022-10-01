@@ -12,6 +12,7 @@
 #include <string>
 #include <array>
 #include <cstdarg>
+#include <format>
 
 #define BEGIN_NAMESPACE( x ) namespace x {
 #define END_NAMESPACE }
@@ -102,5 +103,4 @@ public:
 #else
 #define XorStr( s ) ( XorCompileTime::XorString< sizeof( s ) - 1, __COUNTER__ >( s, std::make_index_sequence< sizeof( s ) - 1>() ).decrypt() )
 #endif
-
 END_NAMESPACE

@@ -87,25 +87,25 @@ int Thing::getStackPos()
 }
 
 // Do not change if you do not understand what is being done.
-void Thing::generateBuffer()
-{
-    m_drawBuffer = nullptr;
-
-    DrawPool::DrawOrder order = DrawPool::DrawOrder::NONE;
-    if (isSingleGround())
-        order = DrawPool::DrawOrder::FIRST;
-    else if (isGroundBorder())
-        order = DrawPool::DrawOrder::SECOND;
-    else if ((isCommon() || isOnBottom()) && isSingleDimension() && !hasDisplacement() && isNotMoveable())
-        order = DrawPool::DrawOrder::THIRD;
-    else if (isTopGround() || g_app.isDrawingEffectsOnTop() && isEffect())
-        order = DrawPool::DrawOrder::FOURTH;
-    else if (isMissile())
-        order = DrawPool::DrawOrder::FIFTH;
-
-    if (order != DrawPool::DrawOrder::NONE)
-        m_drawBuffer = std::make_shared<DrawBuffer>(order);
-}
+//void Thing::generateBuffer()
+//{
+//    m_drawBuffer = nullptr;
+//
+//    DrawPool::DrawOrder order = DrawPool::DrawOrder::NONE;
+//    if (isSingleGround())
+//        order = DrawPool::DrawOrder::FIRST;
+//    else if (isGroundBorder())
+//        order = DrawPool::DrawOrder::SECOND;
+//    else if ((isCommon() || isOnBottom()) && isSingleDimension() && !hasDisplacement() && isNotMoveable())
+//        order = DrawPool::DrawOrder::THIRD;
+//    else if (isTopGround() || g_app.isDrawingEffectsOnTop() && isEffect())
+//        order = DrawPool::DrawOrder::FOURTH;
+//    else if (isMissile())
+//        order = DrawPool::DrawOrder::FIFTH;
+//
+//    if (order != DrawPool::DrawOrder::NONE)
+//        m_drawBuffer = std::make_shared<DrawBuffer>(order);
+//}
 
 const ThingTypePtr& Thing::getThingType()
 {

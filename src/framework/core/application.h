@@ -43,6 +43,7 @@ public:
     void setCompactName(const std::string_view name) { m_appCompactName = name; }
     void setOrganizationName(const std::string_view name) { m_organizationName = name; }
 
+
     bool isRunning() { return m_running; }
     bool isStopping() { return m_stopping; }
     bool isTerminated() { return m_terminated; }

@@ -161,7 +161,7 @@ public:
     virtual void onDisappear() {}
 
 protected:
-    void generateBuffer();
+    //void generateBuffer();
 
     uint8_t
         m_numPatternX{ 0 },

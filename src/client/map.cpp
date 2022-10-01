@@ -37,7 +37,7 @@
 #include "towns.h"
 
 static constexpr uint8_t
-MAX_VIEWPORT_X = 16, MAX_VIEWPORT_Y = 12;
+MAX_VIEWPORT_X = 12, MAX_VIEWPORT_Y = 9;
 
 Map g_map;
 TilePtr Map::m_nulltile;
@@ -152,7 +152,7 @@ void Map::addThing(const ThingPtr& thing, const Position& pos, int16_t stackPos)
             m_floorMissiles[pos.z].push_back(thing->static_self_cast<Missile>());
         } else if (thing->isAnimatedText()) {
             // this code will stack animated texts of the same color
-            const AnimatedTextPtr animatedText = thing->static_self_cast<AnimatedText>();
+            const auto& animatedText = thing->static_self_cast<AnimatedText>();
             AnimatedTextPtr prevAnimatedText;
 
             bool merged = false;
@@ -180,7 +180,7 @@ void Map::addThing(const ThingPtr& thing, const Position& pos, int16_t stackPos)
                 m_animatedTexts.push_back(animatedText);
             }
         } else if (thing->isStaticText()) {
-            const StaticTextPtr staticText = thing->static_self_cast<StaticText>();
+            const auto& staticText = thing->static_self_cast<StaticText>();
             for (const auto& other : m_staticTexts) {
                 // try to combine messages
                 if (other->getPosition() == pos && other->addMessage(staticText->getName(), staticText->getMessageMode(), staticText->getFirstMessage())) {
@@ -200,7 +200,7 @@ void Map::addThing(const ThingPtr& thing, const Position& pos, int16_t stackPos)
 
 ThingPtr Map::getThing(const Position& pos, int16_t stackPos)
 {
-    if (const TilePtr tile = getTile(pos))
+    if (const auto& tile = getTile(pos))
         return tile->getThing(stackPos);
 
     return nullptr;
@@ -213,14 +213,14 @@ bool Map::removeThing(const ThingPtr& thing)
 
     bool ret = false;
     if (thing->isAnimatedText()) {
-        const AnimatedTextPtr animatedText = thing->static_self_cast<AnimatedText>();
+        const auto& animatedText = thing->static_self_cast<AnimatedText>();
         const auto it = std::find(m_animatedTexts.begin(), m_animatedTexts.end(), animatedText);
         if (it != m_animatedTexts.end()) {
             m_animatedTexts.erase(it);
             ret = true;
         }
     } else if (thing->isStaticText()) {
-        const StaticTextPtr staticText = thing->static_self_cast<StaticText>();
+        const auto& staticText = thing->static_self_cast<StaticText>();
         const auto it = std::find(m_staticTexts.begin(), m_staticTexts.end(), staticText);
         if (it != m_staticTexts.end()) {
             m_staticTexts.erase(it);
@@ -228,7 +228,7 @@ bool Map::removeThing(const ThingPtr& thing)
         }
     } else {
         if (thing->isMissile()) {
-            const MissilePtr missile = thing->static_self_cast<Missile>();
+            const auto& missile = thing->static_self_cast<Missile>();
             const uint8_t z = missile->getPosition().z;
             const auto it = std::find(m_floorMissiles[z].begin(), m_floorMissiles[z].end(), missile);
             if (it != m_floorMissiles[z].end()) {
@@ -247,7 +247,7 @@ bool Map::removeThing(const ThingPtr& thing)
 
 bool Map::removeThingByPos(const Position& pos, int16_t stackPos)
 {
-    if (const TilePtr tile = getTile(pos))
+    if (const auto& tile = getTile(pos))
         return removeThing(tile->getThing(stackPos));
 
     return false;
@@ -564,15 +564,16 @@ void Map::setCentralPosition(const Position& centralPosition)
     // the local player is removed from the map when there are too many creatures on his tile,
     // so there is no enough stackpos to the server send him
     g_dispatcher.addEvent([this] {
-        const LocalPlayerPtr localPlayer = g_game.getLocalPlayer();
+        const auto& localPlayer = g_game.getLocalPlayer();
         if (!localPlayer || localPlayer->getPosition() == m_centralPosition)
             return;
-        const TilePtr tile = localPlayer->getTile();
-        if (tile && tile->hasThing(localPlayer))
-            return;
+        if (const auto& tile = localPlayer->getTile()) {
+            if (tile->hasThing(localPlayer))
+                return;
+        }
 
-        const Position oldPos = localPlayer->getPosition();
-        const Position pos = m_centralPosition;
+        const auto& oldPos = localPlayer->getPosition();
+        const auto& pos = m_centralPosition;
         if (oldPos != pos) {
             if (!localPlayer->isRemoved())
                 localPlayer->onDisappear();

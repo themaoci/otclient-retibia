@@ -8,9 +8,9 @@ SpellProgressRect < UIProgressRect
 ActionSlot < UIActionSlot
   size: 34 34
   image-source: /data/images/game/actionbar/slot-actionbar
-  anchors.left: prev.right
-  anchors.top: parent.top
-  margin-left: 3
+  anchors.right: parent.right
+  anchors.top: prev.bottom
+  margin-bottom: 3
   image-size: 34 34
   visible: false
   $pressed:
@@ -38,55 +38,46 @@ ActionSlot < UIActionSlot
 
 UIWindow
   visible: true
-  height: 42
+  width: 120
   anchors.top: parent.top
-  anchors.left: parent.left
+  anchors.bottom: parent.bottom
   anchors.right: parent.right
   image-source: /images/ui/panel_side
   image-border: 4
-  padding: 3
+  padding: 0
   text-align: center
-  //background-color: gray
   auto-focus: first
   draggable: false
-  phantom: false
+  phantom: true
   focusable: false
-  Button
-    id: prevButton
-    image-source: /images/game/actionbar/1pixel-up-frame-background
-    icon: /images/game/actionbar/icon-arrow
-    anchors.left: parent.left
-    anchors.top: parent.top
-    size: 17 17
-    margin-left: 2
-    @onClick: |
-      modules.game_actionbar.actionBar:getChildById('horizontalScroll'):decrement(36)
-  Button
-    id: prevSkipButton
-    image-source: /images/game/actionbar/1pixel-up-frame-background
-    icon: /images/game/actionbar/icon-arrowskip
-    anchors.left: parent.left
-    anchors.top: prevButton.bottom
-    size: 17 17
-    margin-left: 2
-    margin-top: 2
-    @onClick: |
-      modules.game_actionbar.actionBar:getChildById('horizontalScroll'):decrement(999)
   ScrollablePanel
-    id: actionBarPanel
+    id: actionBarPanel_1
     anchors.top: parent.top
-    anchors.left: prevButton.right
-    anchors.right: nextButton.left
-    //anchors.left: parent.left
-    //anchors.right: parent.right
     anchors.bottom: parent.bottom
-    horizontal-scrollbar: horizontalScroll
+    anchors.right: parent.right
+    vertical-scrollbar: horizontalScroll
     inverted-scroll: false
-    margin-left: 1
-    margin-right: 4
-    margin-top: 1
-    height: 40
-  HorizontalScrollBar
+    margin-right: 2
+    width: 35
+  ScrollablePanel
+    id: actionBarPanel_2
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    anchors.right: prev.left
+    vertical-scrollbar: horizontalScroll
+    inverted-scroll: false
+    margin-right: 2
+    width: 35
+  ScrollablePanel
+    id: actionBarPanel_3
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    anchors.right: prev.left
+    vertical-scrollbar: horizontalScroll
+    inverted-scroll: false
+    margin-right: 2
+    width: 35
+  VerticalScrollBar
     id: horizontalScroll
     anchors.top: parent.top
     anchors.bottom: parent.bottom
@@ -94,24 +85,3 @@ UIWindow
     step: 38
     pixels-scroll: true
     visible: false
-  Button
-    id: nextButton
-    image-source: /images/game/actionbar/1pixel-up-frame-background
-    icon: /images/game/actionbar/icon-arrow-right
-    anchors.right: parent.right
-    anchors.top: parent.top
-    size: 17 17
-    margin-right: 2
-    @onClick: |
-      modules.game_actionbar.actionBar:getChildById('horizontalScroll'):increment(36)
-  Button
-    id: nextSkipButton
-    image-source: /images/game/actionbar/1pixel-up-frame-background
-    icon: /images/game/actionbar/icon-arrowskip-right
-    anchors.right: parent.right
-    anchors.top: nextButton.bottom
-    size: 17 17
-    margin-right: 2
-    margin-top: 2
-    @onClick: |
-      modules.game_actionbar.actionBar:getChildById('horizontalScroll'):increment(999)

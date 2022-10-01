@@ -4,6 +4,7 @@ gameRootPanel = nil
 gameMapPanel = nil
 gameRightPanel = nil
 gameRightExtraPanel = nil
+gameRightActionBarPanel = nil
 gameLeftPanel = nil
 gameSelectedPanel = nil
 panelsList = {}
@@ -55,6 +56,7 @@ function init()
     gameMapPanel = gameRootPanel:getChildById('gameMapPanel')
     gameRightPanel = gameRootPanel:getChildById('gameRightPanel')
     gameRightExtraPanel = gameRootPanel:getChildById('gameRightExtraPanel')
+    gameRightActionBarPanel = gameRootPanel:getChildById('gameRightActionBarPanel')
     gameLeftPanel = gameRootPanel:getChildById('gameLeftPanel')
     gameBottomPanel = gameRootPanel:getChildById('gameBottomPanel')
 
@@ -255,7 +257,7 @@ function show()
 
     addEvent(function()
         if not limitedZoom or g_game.isGM() then
-            gameMapPanel:setMaxZoomOut(513)
+            gameMapPanel:setMaxZoomOut(11)
             gameMapPanel:setLimitVisibleRange(false)
         else
             gameMapPanel:setMaxZoomOut(11)
@@ -1063,6 +1065,10 @@ end
 
 function getMapPanel()
     return gameMapPanel
+end
+
+function getActionBarPanel()
+    return gameRightActionBarPanel
 end
 
 function getRightPanel()

@@ -1,5 +1,8 @@
 Module
   name: game_actionbar
+  description: Game ActionBar
+  author: TheMaoci
+  website: https://github.com/TheMaoci
   sandboxed: true
   scripts: [ game_actionbar ]
   autoload: true

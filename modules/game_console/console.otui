@@ -24,7 +24,7 @@ ConsolePhantomLabel < UILabel
   selection-background-color: #999999
 
 ConsoleTabBar < MoveableTabBar
-  height: 28
+  height: 20
 
 ConsoleTabBarPanel < MoveableTabBarPanel
   id: consoleTab
@@ -52,21 +52,23 @@ ConsoleTabBarPanel < MoveableTabBarPanel
     pixels-scroll: true
 
 ConsoleTabBarButton < MoveableTabBarButton
-  height: 28
+  height: 20
   padding: 15
 
 Panel
   id: consolePanel
-  anchors.fill: parent
+  anchors.top: parent.top
+  anchors.bottom: parent.bottom
+  anchors.left: parent.left
+  anchors.right: parent.right
 
   CheckBox
     id: toggleChat
-    !tooltip: tr('Disable chat mode, allow to walk using WASD')
     anchors.left: parent.left
     anchors.top: parent.top
-    margin-left: 13
-    margin-top: 8
-    @onCheckChange: updateChatMode()
+    margin-left: 0
+    visible: false
+    margin-top: 0
 
   TabButton
     id: prevChannelButton
@@ -74,15 +76,16 @@ Panel
     anchors.left: toggleChat.right
     anchors.top: parent.top
     margin-left: 3
-    margin-top: 6
+    margin-top: 10
 
   ConsoleTabBar
     id: consoleTabBar
     anchors.left: prev.right
     anchors.top: parent.top
+    anchors.bottom: consoleContentPanel.top
     anchors.right: next.left
     margin-left: 5
-    margin-top: 3
+    margin-top: 5
     margin-right: 5
     tab-spacing: 2
     movable: true
@@ -98,13 +101,17 @@ Panel
   TabButton
     id: closeChannelButton
     !tooltip: tr('Close this channel') .. ' (Ctrl+E)'
-    icon: /images/game/console/closechannel
+    image-source: /images/game/console/closechannel
+    size: 16 16
+    image-clip: 0 16 16 16
     anchors.right: next.left
     anchors.top: parent.top
     enabled: false
     margin-right: 5
     margin-top: 6
     @onClick: removeCurrentTab()
+    $hover:
+      image-clip: 0 0 16 16
 
   TabButton
     id: clearChannelButton
@@ -121,22 +128,30 @@ Panel
   TabButton
     id: channelsButton
     !tooltip: tr('Open new channel') .. ' (Ctrl+O)'
-    icon: /images/game/console/channels
+    image-source: /images/game/console/channels
+    size: 16 16
+    image-clip: 0 16 16 16
     anchors.right: next.left
     anchors.top: parent.top
     margin-right: 5
     margin-top: 6
     @onClick: g_game.requestChannels()
+    $hover:
+      image-clip: 0 0 16 16
 
   TabButton
     id: ignoreButton
     !tooltip: tr('Ignore players')
-    icon: /images/game/console/ignore
+    image-source: /images/game/console/ignore
+    size: 16 16
+    image-clip: 0 16 16 16
     anchors.right: parent.right
     anchors.top: parent.top
     margin-right: 5
     margin-top: 6
     @onClick: onClickIgnoreButton()
+    $hover:
+      image-clip: 0 0 16 16
 
   Panel
     id: consoleContentPanel
@@ -147,7 +162,7 @@ Panel
     margin-left: 6
     margin-right: 6
     margin-bottom: 4
-    margin-top: 4
+    margin-top: 10
     padding: 1
     focusable: false
 

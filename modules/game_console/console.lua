@@ -132,8 +132,8 @@ ChannelEventFormats = {
     [ChannelEvent.Exclude] = '%s has been removed from the channel.'
 }
 
-MAX_HISTORY = 500
-MAX_LINES = 100
+MAX_HISTORY = 2000
+MAX_LINES = 500
 HELP_CHANNEL = 9
 
 consolePanel = nil
@@ -251,6 +251,7 @@ function init()
     if g_game.isOnline() then
         online()
     end
+    switchChat(false)
 end
 
 function clearSelection(consoleBuffer)
@@ -332,10 +333,10 @@ function switchChat(enabled)
 
     if enabled then
         unbindMovingKeys()
-        consoleToggleChat:setTooltip(tr('Disable chat mode, allow to walk using WASD'))
+        --consoleToggleChat:setTooltip(tr('Disable chat mode, allow to walk using WASD'))
     else
         bindMovingKeys()
-        consoleToggleChat:setTooltip(tr('Enable chat mode'))
+        --consoleToggleChat:setTooltip(tr('Enable chat mode'))
     end
 end
 
@@ -344,9 +345,9 @@ function switchChatOnCall()
         return
     end
 
-    if isChatEnabled() and consoleToggleChat:isChecked() or not consoleTextEdit:isVisible() then
+    --if isChatEnabled() and consoleToggleChat:isChecked() or not consoleTextEdit:isVisible() then
         switchChat(not consoleTextEdit:isVisible())
-    end
+    --end
 end
 
 function disableChatOnCall()
@@ -354,8 +355,8 @@ function disableChatOnCall()
         return
     end
 
-    if consoleToggleChat:isChecked() then
-        switchChat(false)
+    if consoleTextEdit:isVisible() then
+        switchChatOnCall()
     end
 end
 

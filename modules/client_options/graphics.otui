@@ -96,7 +96,7 @@ Panel
     anchors.top: prev.bottom
     margin-top: 3
     minimum: 0
-    maximum: 100
+    maximum: 25
 
   Label
     id: shadowFloorIntensityLevel

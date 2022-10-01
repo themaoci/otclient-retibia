@@ -24,7 +24,7 @@ Panel
 
   Label
     id: turnDelayLabel
-    !text: tr('Turn delay: %sms', 30)
+    !text: tr('Turn delay: %sms', 60)
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: prev.bottom
@@ -39,12 +39,12 @@ Panel
     anchors.right: parent.right
     anchors.top: prev.bottom
     margin-top: 3
-    minimum: 30
-    maximum: 250
+    minimum: 60
+    maximum: 60
 
   Label
     id: hotkeyDelayLabel
-    !text: tr('Hotkey delay: %dms', 30)
+    !text: tr('Hotkey delay: %dms', 50)
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: prev.bottom
@@ -59,7 +59,7 @@ Panel
     anchors.right: parent.right
     anchors.top: prev.bottom
     margin-top: 3
-    minimum: 30
+    minimum: 50
     maximum: 250
 
   Button

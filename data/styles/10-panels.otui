@@ -11,9 +11,28 @@ FlatPanel < Panel
   image-border: 1
 
 ScrollableFlatPanel < ScrollablePanel
-  image-source: /images/ui/panel_flat
   image-border: 1
 
 LightFlatPanel < Panel
   image-source: /images/ui/panel_lightflat
+  image-border: 1
+
+SoulPanel < Panel
+  image-source: /images/game/slots/soul
+  image-border: 1
+
+CapPanel < Panel
+  image-source: /images/game/slots/cap
+  image-border: 1
+
+BroderPanel < Panel
+  image-source: /images/ui/broder_panel
+  image-border: 1
+
+ProgressIcons < Panel
+  image-source: /images/ui/progress_icons
+  image-border: 1
+
+ServerTitle < Panel
+  image-source: /images/ui/realtibia
   image-border: 1

@@ -6,5 +6,4 @@ Item < UIItem
   border-color: white
   color: white
 
-  $disabled:
-    color: #646464
+

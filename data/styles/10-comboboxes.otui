@@ -3,13 +3,13 @@ ComboBoxPopupScrollMenuButton < UIButton
   font: verdana-11px-antialised
   text-align: left
   text-offset: 4 0
-  color: #dfdfdf
+  color: #BFBFBF
   background-color: alpha
   margin: 1
 
   $hover !disabled:
     color: #dfdfdf
-    background-color: #355d89
+    background-color: #595959
 
   $disabled:
     color: #dfdfdf88

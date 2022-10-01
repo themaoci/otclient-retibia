@@ -8,6 +8,3 @@ Cursors
   vertical:
     image: verticalcursor
     hot-spot: 4 9
-  text:
-    image: textcursor
-    hot-spot: 4 9

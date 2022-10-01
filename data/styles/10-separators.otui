@@ -11,3 +11,22 @@ VerticalSeparator < UIWidget
   width: 2
   phantom: true
   focusable: false
+
+OptionsBroder < UIWidget
+  image-source: /images/ui/options_broder
+  image-border: 1
+  height: 22
+  phantom: true
+  focusable: false
+
+BackGroundBroder < UIWidget
+  image-source: /images/ui/menubarleft
+  image-border: 1
+  phantom: true
+  focusable: false
+
+MiniBroder < UIWidget
+  image-source: /images/ui/minibroder
+  image-border: 1
+  focusable: false
+  virtual: false

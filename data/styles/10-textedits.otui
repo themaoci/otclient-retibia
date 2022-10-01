@@ -1,10 +1,10 @@
 TextEdit < UITextEdit
   font: verdana-11px-antialised
-  color: #272727
-  size: 86 22
+  color: white
+  size: 86 18
   text-offset: 0 4
   opacity: 1
-  padding: 4
+  padding: 2
   image-source: /images/ui/textedit
   image-border: 1
   selection-color: #272727

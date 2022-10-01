@@ -1,16 +1,17 @@
 MiniWindow < UIMiniWindow
   font: verdana-11px-antialised
-  icon-rect: 4 4 16 16
-  width: 192
+  icon-rect: 4 2 13 12
+  color: #8F8F8F
+  width: 176
   height: 200
-  text-offset: 24 5
+  text-offset: 20 1
   text-align: topLeft
   image-source: /images/ui/miniwindow
   image-border: 4
-  image-border-top: 23
+  image-border-top: 20
   image-border-bottom: 4
   focusable: false
-  &minimizedHeight: 24
+  &minimizedHeight: 20
 
   $on:
     image-border-bottom: 2
@@ -30,8 +31,8 @@ MiniWindow < UIMiniWindow
     id: closeButton
     anchors.top: parent.top
     anchors.right: parent.right
-    margin-top: 5
-    margin-right: 5
+    margin-top: 2
+    margin-right: 4
     size: 14 14
     image-source: /images/ui/miniwindow_buttons
     image-clip: 28 0 14 14
@@ -72,8 +73,8 @@ MiniWindow < UIMiniWindow
     anchors.bottom: parent.bottom
     anchors.right: parent.right
     step: 14
-    margin-top: 22
-    margin-right: 3
+    margin-top: 16
+    margin-right: 4
     margin-bottom: 3
     pixels-scroll: true
 
@@ -85,15 +86,14 @@ MiniWindow < UIMiniWindow
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    height: 3
+    height: 8
     minimum: 48
     margin-left: 3
     margin-right: 3
-    background: #ffffff88
+
 
 MiniWindowContents < ScrollablePanel
   id: contentsPanel
-  anchors.fill: parent
   anchors.right: miniwindowScrollBar.left
   margin-left: 3
   margin-bottom: 3
@@ -104,3 +104,4 @@ MiniWindowContents < ScrollablePanel
 BorderlessGameWindow < UIWindow
   focusable: false
   margin: 2
+

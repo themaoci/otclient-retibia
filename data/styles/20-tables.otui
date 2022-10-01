@@ -35,7 +35,7 @@ TableHeaderColumn < UITableHeaderColumn
   font: verdana-11px-antialised
   background-color: alpha
   color: #dfdfdfff
-  height: 23
+  height: 30
   focusable: true
   text-offset: 0 0
   image-source: /images/ui/button

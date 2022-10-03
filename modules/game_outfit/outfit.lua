@@ -620,6 +620,12 @@ function showMounts()
   window.selectionList:destroyChildren()
 
   local focused = nil
+  
+  local button = g_ui.createWidget("SelectionButton", window.selectionList)
+  button:setId(0)
+  button.name:setText("None")
+  focused = 0
+
   for _, mountData in ipairs(ServerData.mounts) do
     local button = g_ui.createWidget("SelectionButton", window.selectionList)
     button:setId(mountData[1])
@@ -632,6 +638,9 @@ function showMounts()
     end
   end
 
+  if #ServerData.mounts == 1 then
+    window.selectionList:focusChild(nil)
+  end
   window.configure.mount.check:setEnabled(focused)
   window.configure.mount.check:setChecked(g_game.getLocalPlayer():isMounted() and focused)
 

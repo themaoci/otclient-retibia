@@ -168,10 +168,10 @@ local PreviewOptions = {
   ["showFloor"] = onShowFloorChange,
   ["showOutfit"] = onShowOutfitChange,
   ["showMount"] = onShowMountChange,
-  ["showWings"] = onShowWingsChange,
-  ["showAura"] = onShowAuraChange,
-  ["showShader"] = onShowShaderChange,
-  ["showBars"] = onShowBarsChange
+  -- ["showWings"] = onShowWingsChange,
+  -- ["showAura"] = onShowAuraChange,
+  -- ["showShader"] = onShowShaderChange,
+  -- ["showBars"] = onShowBarsChange
 }
 
 function create(player, outfitList,creatureMount, mountList, creatureFamiliar, familiarList)
@@ -280,10 +280,10 @@ function create(player, outfitList,creatureMount, mountList, creatureFamiliar, f
 
   showOutfitCheck:setChecked(settings.showOutfit)
   showMountCheck:setChecked(settings.showMount)
-  showWingsCheck:setChecked(settings.showWings)
-  showAuraCheck:setChecked(settings.showAura)
-  showShaderCheck:setChecked(settings.showShader)
-  showBarsCheck:setChecked(settings.showBars)
+  -- showWingsCheck:setChecked(settings.showWings)
+  -- showAuraCheck:setChecked(settings.showAura)
+  -- showShaderCheck:setChecked(settings.showShader)
+  -- showBarsCheck:setChecked(settings.showBars)
 
   colorBoxGroup = UIRadioGroup.create()
   for j = 0, 6 do
@@ -591,7 +591,7 @@ function showOutfits()
     outfit.healthBar = 0
     outfit.manaBar = 0
     button.outfit:setOutfit(outfit)
-    --button.outfit:setCenter(true)
+    button.outfit:setCenter(true)
     button.name:setText(outfitData[2])
     if tempOutfit.type == outfitData[1] then
       focused = outfitData[1]
@@ -631,7 +631,7 @@ function showMounts()
     button:setId(mountData[1])
 
     button.outfit:setOutfit({type = mountData[1]})
-    --button.outfit:setCenter(true)
+    button.outfit:setCenter(true)
     button.name:setText(mountData[2])
     if tempOutfit.mount == mountData[1] then
       focused = mountData[1]
@@ -769,7 +769,7 @@ function showShaders()
     button:setId(shaderData[2])
 
     button.outfit:setOutfit({type = tempOutfit.type, addons = tempOutfit.addons, shader = shaderData[2]})
-    --button.outfit:setCenter(true)
+    button.outfit:setCenter(true)
     button.name:setText(shaderData[2])
     if tempOutfit.shader == shaderData[2] then
       focused = shaderData[2]
@@ -1190,8 +1190,7 @@ function updatePreview()
   end
 
   previewCreature:setOutfit(previewOutfit)
-  --print(direction)
-  --previewCreature:setDirection(direction)
+  previewCreature:setDirection(direction)
 end
 
 function rotate(value)
@@ -1203,6 +1202,7 @@ function rotate(value)
     direction = Directions.North
   end
   previewCreature:setDirection(direction)
+  previewCreature:setCenter(true)
   floor:setMargin(0)
 end
 

@@ -1,8 +1,8 @@
 MiniPanel < Panel
-  text-offset: 0 3
+  text-offset: 0 4
   text-align: top
   image-source: /images/ui/minipanel
-  image-border: 3
+  image-border: 4
   image-border-top: 22
   padding-left: 6
   padding-bottom: 6
@@ -255,9 +255,9 @@ OutfitWindow < MainWindow
       UICreature
         id: creature
         anchors.centerIn: parent
-        size: 128 128
-        margin-right: 32
-        margin-bottom: 32
+        size: 82 82
+        margin-right: 24
+        margin-bottom: 24
         outfit-shader: outfit_default
 
       Panel
@@ -414,10 +414,17 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
+          image-color: #ffffffff
           image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
           text-offset: 15 0
           text: Preset:
           width: 84
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name
@@ -435,10 +442,16 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
-          image-source: /images/ui/checkbox_round
           text-offset: 15 0
           text: Outfit:
           width: 84
+          image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name
@@ -455,10 +468,16 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
-          image-source: /images/ui/checkbox_round
           text-offset: 15 0
           text: Mount:
           width: 84
+          image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name
@@ -475,10 +494,16 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
-          image-source: /images/ui/checkbox_round
           text-offset: 15 0
           text: Wings:
           width: 84
+          image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name
@@ -495,10 +520,16 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
-          image-source: /images/ui/checkbox_round
           text-offset: 15 0
           text: Aura:
           width: 84
+          image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name
@@ -515,10 +546,16 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
-          image-source: /images/ui/checkbox_round
           text-offset: 15 0
           text: Shader:
           width: 84
+          image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name
@@ -535,10 +572,16 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
-          image-source: /images/ui/checkbox_round
           text-offset: 15 0
           text: Health Bar:
           width: 84
+          image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name
@@ -555,10 +598,16 @@ OutfitWindow < MainWindow
           id: check
           anchors.verticalCenter: parent.verticalCenter
           anchors.left: parent.left
-          image-source: /images/ui/checkbox_round
           text-offset: 15 0
           text: Mana Bar:
           width: 84
+          image-source: /images/ui/checkbox_round
+          image-clip: 0 0 15 15
+          $!checked:
+            image-clip: 0 0 15 15
+
+          $checked:
+            image-clip: 0 30 15 15
 
         FlatPanel
           id: name

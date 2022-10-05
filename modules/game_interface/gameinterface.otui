@@ -38,7 +38,7 @@ UIWidget
   GameMapPanel
     id: gameMapPanel
     anchors.left: gameLeftPanel.right
-    anchors.right: gameRightExtraPanel.left
+    anchors.right: gameRightActionBarPanel.left
     anchors.top: parent.top
     anchors.bottom: gameBottomPanel.top
     focusable: false
@@ -119,7 +119,7 @@ UIWidget
   Splitter
     id: bottomSplitter
     anchors.left: gameLeftPanel.right
-    anchors.right: gameRightExtraPanel.left
+    anchors.right: gameRightActionBarPanel.left
     anchors.bottom: parent.bottom
     relative-margin: bottom
     margin-bottom: 172

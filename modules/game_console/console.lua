@@ -165,7 +165,9 @@ local communicationSettings = {
     ignoredPlayers = {},
     whitelistedPlayers = {}
 }
-
+function consolePanelOnGeometryChange(self) 
+    consolePanel:setHeight(self:getHeight() + 0) 
+end
 function init()
     connect(g_game, {
         onTalk = onTalk,
@@ -182,7 +184,13 @@ function init()
         onGameEnd = offline,
         onChannelEvent = onChannelEvent
     })
-
+    -- update console height cause its not done automatically... and anchors.fill not work...
+    connect(
+        modules.game_interface.getBottomPanel(),
+        {
+            onGeometryChange = consolePanelOnGeometryChange
+        }
+    )
     consolePanel = g_ui.loadUI('console', modules.game_interface.getBottomPanel())
     consoleTextEdit = consolePanel:getChildById('consoleTextEdit')
     consoleContentPanel = consolePanel:getChildById('consoleContentPanel')

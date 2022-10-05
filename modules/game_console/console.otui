@@ -57,10 +57,10 @@ ConsoleTabBarButton < MoveableTabBarButton
 
 Panel
   id: consolePanel
-  anchors.top: parent.top
-  anchors.bottom: parent.bottom
-  anchors.left: parent.left
   anchors.right: parent.right
+  anchors.left: parent.left
+  anchors.bottom: parent.bottom
+  height: 172
 
   CheckBox
     id: toggleChat

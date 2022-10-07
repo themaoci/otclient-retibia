@@ -125,7 +125,8 @@ public:
     bool isDrawingHealthBars() { return m_drawHealthBars; }
 
     void setDrawLights(bool enable);
-    bool isDrawingLights() { return m_lightView && m_lightView->isDark(); }
+    // 
+    bool isDrawingLights() { return m_lightView/* && m_lightView->isDark()*/; }
 
     void setLimitVisibleDimension(bool v) { m_limitVisibleDimension = v; }
     bool isLimitedVisibleDimension() { return m_limitVisibleDimension; }

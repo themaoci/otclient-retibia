@@ -53,7 +53,7 @@ MinimapZoomOutButton < Button
   //icon-source: /images/game/minimap/zoom_out
 
 MinimapResetButton < Button
-  !text: tr('Centre')
+  !text: tr('Center')
   size: 44 20
   anchors.left: parent.left
   anchors.top: parent.top
@@ -65,23 +65,22 @@ Minimap < UIMinimap
   color: black
 
   MinimapFloorUpButton
-    id: floorUp
+    id: floorUpButton
     @onClick: self:getParent():floorUp(1)
 
   MinimapFloorDownButton
-    id: floorDown
+    id: floorDownButton
     @onClick: self:getParent():floorDown(1)
 
   MinimapZoomInButton
-    id: zoomIn
+    id: zoomInButton
     @onClick: self:getParent():zoomIn()
 
   MinimapZoomOutButton
-    id: zoomOut
+    id: zoomOutButton
     @onClick: self:getParent():zoomOut()
 
   MinimapResetButton
-    id: reset
     @onClick: self:getParent():reset()
 
 
@@ -103,9 +102,11 @@ MinimapFlagCheckBox < CheckBox
   $!checked:
     image-clip: 16 0 16 16
 
+                          
   $checked:
     image-clip: 0 0 16 16
     icon-offset: 3 3
+                          
 
 MinimapFlagWindow < MainWindow
   !text: tr('Edit Mark')
@@ -113,7 +114,7 @@ MinimapFlagWindow < MainWindow
 
   Label
     !text: tr('Enter a short description') .. ':'
-    color: #BFBFBF
+    color: #BFBFBF       
     anchors.left: parent.left
     anchors.top: parent.top
 
@@ -229,7 +230,7 @@ MinimapFlagWindow < MainWindow
   Button
     id: okButton
     !text: tr('Ok')
-    width: 45
+    width: 64
     anchors.right: next.left
     anchors.bottom: parent.bottom
     margin-right: 10
@@ -237,6 +238,6 @@ MinimapFlagWindow < MainWindow
   Button
     id: cancelButton
     !text: tr('Cancel')
-    width: 45
+    width: 64
     anchors.right: parent.right
     anchors.bottom: parent.bottom

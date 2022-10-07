@@ -15,6 +15,7 @@ GameSideActionBarPanel < Panel
 SelectColumnButton < CheckBox
   visible: false
   opacity: 0.3
+  !tooltip: tr('Open new Containers in this panel.')
   $hover:
     opacity: 1
 
@@ -38,7 +39,7 @@ UIWidget
   GameMapPanel
     id: gameMapPanel
     anchors.left: gameLeftPanel.right
-    anchors.right: gameRightActionBarPanel.left
+    anchors.right: gameRightExtraPanel.left
     anchors.top: parent.top
     anchors.bottom: gameBottomPanel.top
     focusable: false
@@ -54,7 +55,7 @@ UIWidget
   GameBottomPanel
     id: gameBottomPanel
     anchors.left: gameLeftPanel.right
-    anchors.right: gameRightActionBarPanel.left
+    anchors.right: gameRightExtraPanel.left
     anchors.top: bottomSplitter.top
     anchors.bottom: parent.bottom
 
@@ -91,16 +92,6 @@ UIWidget
       width: 0
       visible: false
 
-  GameSideActionBarPanel
-    id: gameRightActionBarPanel
-    anchors.right: prev.left
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
-    width: 120
-    margin-right: 1
-    focusable: false
-    visible: true
-
   SelectColumnButton
     id: gameSelectLeftColumn
     anchors.right: gameLeftPanel.right
@@ -119,10 +110,10 @@ UIWidget
   Splitter
     id: bottomSplitter
     anchors.left: gameLeftPanel.right
-    anchors.right: gameRightActionBarPanel.left
+    anchors.right: gameRightExtraPanel.left
     anchors.bottom: parent.bottom
     relative-margin: bottom
-    margin-bottom: 172
+    margin-bottom: 200
     @canUpdateMargin: function(self, newMargin) if modules.client_options.getOption('dontStretchShrink') then return self:getMarginBottom() end return math.max(math.min(newMargin, self:getParent():getHeight() - 300), 100) end
     @onGeometryChange: function(self) self:setMarginBottom(math.min(math.max(self:getParent():getHeight() - 300, 100), self:getMarginBottom())) end
 

@@ -271,7 +271,7 @@ otclient.id1
 otclient.id2
 otclient.nam
 otclient.til
-
+\#*
 \#TestBuild
 \#TestBuild x86
 \#TestBuild x64

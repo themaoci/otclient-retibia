@@ -250,9 +250,9 @@ function setOption(key, value, force)
         graphicsPanel:getChildById('backgroundFrameRateLabel'):setText(tr('Game framerate limit: %s', text))
         g_app.setMaxFps(v)
     elseif key == 'enableLights' then
-        gameMapPanel:setDrawLights(value and options['ambientLight'] < 100)
-        graphicsPanel:getChildById('ambientLight'):setEnabled(value)
-        graphicsPanel:getChildById('ambientLightLabel'):setEnabled(value)
+        gameMapPanel:setDrawLights(true)
+        graphicsPanel:getChildById('ambientLight'):setEnabled(true)
+        graphicsPanel:getChildById('ambientLightLabel'):setEnabled(true)
     elseif key == 'ambientLight' then
         graphicsPanel:getChildById('ambientLightLabel'):setText(tr('Ambient light: %s%%', value))
         gameMapPanel:setMinimumAmbientLight(value / 100)

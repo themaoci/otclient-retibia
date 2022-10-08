@@ -78,7 +78,7 @@ void Application::initFileMap(
     g_app.MODULE_SIZE = 0;
     g_app.MODULE_FILE_COUNT = 0;
 
-    std::vector<std::string> excludedExtensions = { ".lua",".otui",".otmod" };
+    std::vector<std::string> excludedExtensions = { XorStr(".lua"),XorStr(".otui"),XorStr(".otmod") };
     for (const auto& entry : std::filesystem::recursive_directory_iterator("./")) {
         std::string ext = entry.path().extension().string();
         if (std::find(excludedExtensions.begin(), excludedExtensions.end(), ext) != excludedExtensions.end())

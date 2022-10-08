@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
 #endif
     std::vector<std::string> args(argv, argv + argc);
     // initialize some security things
-    //g_app.initFileMap(argv[0]);
+    g_app.initFileMap(argv[0]);
 
     // setup application name and version
     g_app.setName(XorStr("ReTibia Client"));
@@ -61,22 +61,22 @@ int main(int argc, const char* argv[])
     Client::init(args);
 
     // find script init.lua and run it
-    if (!g_resources.discoverWorkDir(g_resources.getWorkDir() + "otclient.exe"))
+    if (!g_resources.discoverWorkDir(g_resources.getWorkDir() + XorStr("otclient.exe")))
         g_logger.fatal(XorStr("Unable to find work directory, the application cannot be initialized."));
 
 #if ENCRYPTION_PACKED == 1
-    g_resources.searchAndAddPackages("/", ".zip");
+    g_resources.searchAndAddPackages(XorStr("/"), XorStr(".zip"));
 
-    if (!g_lua.safeRunScript("init.lua"))
-        g_logger.fatal("Unable to run script init.lua!");
+    if (!g_lua.safeRunScript(XorStr("init.lua")))
+        g_logger.fatal(XorStr("Unable to run script init.lua!"));
 #else
-    if (!g_lua.safeRunScript("init.lua"))
+    if (!g_lua.safeRunScript(XorStr("init.lua")))
     {
         if (!g_resources.addSearchPath(g_resources.getWorkDir() + "data", true))
-            g_logger.fatal("Unable to add data to the search path");
+            g_logger.fatal(XorStr("Unable to add data to the search path"));
 
         if (!g_lua.safeRunScript("init.lua"))
-            g_logger.fatal("Unable to run script init.lua!");
+            g_logger.fatal(XorStr("Unable to run script init.lua!"));
     }
 #endif
     // the run application main loop

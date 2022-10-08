@@ -1,5 +1,5 @@
-g_game.setLastSupportedVersion(1287)
---g_game.setCustomOs(6712)
+g_game.setLastSupportedVersion(1098)
+--g_game.setCustomOs(9000)
 g_logger.setLogFile(g_resources.getWorkDir() .. g_app.getCompactName() .. ".log")
 g_logger.info(os.date("== app started at %b %d %Y %X"))
 g_logger.info(g_app.getName() .. ' ' .. g_app.getVersion() .. ' rev ' .. g_app.getBuildRevision() .. ' (' .. g_app.getBuildCommit() .. ') built on ' .. g_app.getBuildDate() .. ' for arch ' .. g_app.getBuildArch())

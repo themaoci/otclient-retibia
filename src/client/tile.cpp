@@ -80,7 +80,7 @@ void Tile::draw(const Point& dest, const MapPosInfo& mapRect, float scaleFactor,
         tile->drawTop(tile->m_lastDrawDest, scaleFactor, flags, true);
     }
 
-    drawCreature(dest, mapRect, scaleFactor, flags, isCovered, false, lightView);
+    drawCreature(dest, mapRect, scaleFactor, flags, isCovered, true, lightView);
     drawTop(dest, scaleFactor, flags, false, lightView);
 }
 
@@ -138,10 +138,10 @@ void Tile::drawTop(const Point& dest, float scaleFactor, int flags, bool forceDr
 
 void Tile::clean()
 {
-    m_countFlag.opaque = 0;
     while (!m_things.empty())
         removeThing(m_things.front());
     m_tilesRedraw.clear();
+    m_countFlag.opaque = 0;
 }
 
 void Tile::addWalkingCreature(const CreaturePtr& creature)
@@ -752,6 +752,9 @@ void Tile::analyzeThing(const ThingPtr& thing, bool add)
             m_countFlag.hasHookEast += value;
     }
 
+    if (hasElevation())
+        m_countFlag.hasThingWithElevation += value;
+
     // best option to have something more real, but in some cases as a custom project,
     // the developers are not defining crop size
     //if(thing->getRealSize() > SPRITE_SIZE)
@@ -793,7 +796,7 @@ void Tile::analyzeThing(const ThingPtr& thing, bool add)
         m_countFlag.elevation += value;
 
     if (thing->isOpaque()) {
-        m_countFlag.opaque = std::max<int>(m_countFlag.opaque + value, 0);
+        m_countFlag.opaque += value;
     }
 
     if (thing->isGroundBorder() && thing->isNotWalkable())
@@ -845,11 +848,11 @@ bool Tile::canRender(uint32_t& flags, const Position& cameraPosition, const Awar
 
     // Check for non-visible tiles on the screen and ignore them
     {
-        if ((cameraPosition.x - checkPos.x >= viewPort.left) || (checkPos.x - cameraPosition.x == viewPort.right && !hasWideThings() && !hasDisplacement() && m_walkingCreatures.empty()))
+        if ((cameraPosition.x - checkPos.x >= viewPort.left) || (checkPos.x - cameraPosition.x == viewPort.right && !hasWideThings() && !hasDisplacement() && !hasThingWithElevation() && m_walkingCreatures.empty()))
             draw = false;
-        else if ((cameraPosition.y - checkPos.y >= viewPort.top) || (checkPos.y - cameraPosition.y == viewPort.bottom && !hasTallThings() && !hasDisplacement() && m_walkingCreatures.empty()))
+        else if ((cameraPosition.y - checkPos.y >= viewPort.top) || (checkPos.y - cameraPosition.y == viewPort.bottom && !hasTallThings() && !hasDisplacement() && !hasThingWithElevation() && m_walkingCreatures.empty()))
             draw = false;
-        else if ((checkPos.x - cameraPosition.x > viewPort.right && (!hasWideThings() || !hasDisplacement())) || (checkPos.y - cameraPosition.y > viewPort.bottom))
+        else if ((checkPos.x - cameraPosition.x > viewPort.right && (!hasWideThings() || !hasDisplacement() || !hasThingWithElevation())) || (checkPos.y - cameraPosition.y > viewPort.bottom))
             draw = false;
     }
 

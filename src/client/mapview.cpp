@@ -530,7 +530,7 @@ void MapView::setVisibleDimension(const Size& visibleDimension)
         return;
     }
 
-    if (visibleDimension < Size(3)) {
+    if (visibleDimension < 3) {
         g_logger.traceError("reach max zoom in");
         return;
     }

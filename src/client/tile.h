@@ -182,6 +182,7 @@ private:
             hasBottomItem{ 0 },
             hasGroundBorder{ 0 },
             hasTopGroundBorder{ 0 },
+            hasThingWithElevation{ 0 },
             correctCorpse{ 0 };
     };
 
@@ -191,6 +192,7 @@ private:
 
     void checkTranslucentLight();
     bool checkForDetachableThing();
+    bool hasThingWithElevation() { return hasElevation() && m_countFlag.hasThingWithElevation > 0; }
 
     Position m_position;
     Point m_lastDrawDest;

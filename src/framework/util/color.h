@@ -45,7 +45,6 @@ public:
         m_b = colorMap.bF() * brightness;
         m_g = colorMap.gF() * brightness;
         m_r = colorMap.rF() * brightness;
-        update();
     }
 
     Color(const Color& color) = default;
@@ -64,36 +63,28 @@ public:
 
     void setRed(const int r) { 
         m_r = r; 
-        //update(); 
     }
     void setGreen(const int g) { 
         m_g = g; 
-        //update(); 
     }
     void setBlue(const int b) { 
         m_b = b; 
-        //update(); 
     }
     void setAlpha(const int a) { 
         m_a = a; 
-        //update(); 
     }
 
     void setRed(const float r) { 
         m_r = static_cast<uint8_t>(r * 255); 
-        //update(); 
     }
     void setGreen(const float g) { 
         m_g = static_cast<uint8_t>(g * 255); 
-        //update();
     }
     void setBlue(const float b) { 
         m_b = static_cast<uint8_t>(b * 255); 
-        //update();
     }
     void setAlpha(const float a) { 
         m_a = static_cast<uint8_t>(a * 255); 
-        //update();
     }
 
     void setRGBA(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 0xFF) 
@@ -102,7 +93,6 @@ public:
         m_g = g; 
         m_b = b; 
         m_a = a; 
-        //update(); 
     }
     void setRGBA(const uint32_t rgba) { 
         setRGBA((rgba >> 0) & 0xff, (rgba >> 8) & 0xff, (rgba >> 16) & 0xff, (rgba >> 24) & 0xff); }
@@ -132,7 +122,6 @@ public:
         m_r = (m_r/255.f * ((1 - color.m_a/255.f) + (color.m_r/255.f * color.m_a/255.f))) * 255;
         m_g = (m_g/255.f * ((1 - color.m_a/255.f) + (color.m_g/255.f * color.m_a/255.f))) * 255;
         m_b = (m_b/255.f * ((1 - color.m_a/255.f) + (color.m_b/255.f * color.m_a/255.f))) * 255;
-        //update();
     }
 
     static uint8_t to8bit(const Color& color)
@@ -166,14 +155,10 @@ public:
         lightGray, orange;
 
 private:
-    void update();
-
     uint8_t m_r{ UINT8_MAX },
         m_g{ UINT8_MAX },
         m_b{ UINT8_MAX },
         m_a{ UINT8_MAX };
-
-    uint32_t m_rgba{ UINT32_MAX };
 };
 
 std::ostream& operator<<(std::ostream& out, const Color& color);

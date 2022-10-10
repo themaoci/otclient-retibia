@@ -144,7 +144,7 @@ end
 
 function onQuantityValueChange(quantity)
     if selectedItem then
-        if tonumber(selectedItem.funcShop) == 0 then
+        if tonumber(selectedItem.specialId) ~= 0 then
             weightLabel:setText(string.format('%.2f', selectedItem.weight * quantity) .. ' ' .. WEIGHT_UNIT)
         end
         priceLabel:setText(formatCurrency(getItemPrice(selectedItem)))
@@ -297,7 +297,7 @@ end
 function canTradeItem(item)
     if getCurrentTradeType() == BUY then
         return
-            (tonumber(item.funcShop) == 1 or ignoreCapacity:isChecked() or (not ignoreCapacity:isChecked() and playerFreeCapacity >= item.weight)) and
+            (tonumber(item.specialId) > 0 or ignoreCapacity:isChecked() or (not ignoreCapacity:isChecked() and playerFreeCapacity >= item.weight)) and
                 playerMoney >= getItemPrice(item, true)
     else
         return getSellQuantity(item.ptr) > 0
@@ -311,7 +311,7 @@ function refreshItem(item)
 
     if getCurrentTradeType() == BUY then
         local capacityMaxCount = math.floor(playerFreeCapacity / item.weight)
-        if ignoreCapacity:isChecked() or tonumber(item.funcShop) == 1 then
+        if ignoreCapacity:isChecked() or tonumber(item.specialId) > 0 then
             capacityMaxCount = 65535
         end
         local priceMaxCount = math.floor(playerMoney / getItemPrice(item, true))
@@ -349,7 +349,7 @@ function refreshTradeItems()
         local text = ''
         local name = item.name
         text = text .. name
-        if showWeight and tonumber(item.funcShop) == 0 then
+        if showWeight and tonumber(item.specialId) == 0 then
             local weight = string.format('%.2f', item.weight) .. ' ' .. WEIGHT_UNIT
             text = text .. '\n' .. weight
         end
@@ -426,8 +426,7 @@ function onOpenNpcTrade(items)
                 newItem.weight = 0
             end
             newItem.price = item[4]
-            newItem.funcShop = item[6]
-            newItem.specialId = item[7]
+            newItem.specialId = item[6]
 
             table.insert(tradeItems[BUY], newItem)
         end

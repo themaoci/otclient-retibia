@@ -47,7 +47,7 @@ namespace stdext
     {
     public:
         template<typename T>
-        T get(const Key k) const { return has(k) ? any_cast<T>(m_data[k]) : T{}; }
+        T get(const Key k) const { return has(k) ? std::any_cast<T>(m_data[k]) : T{}; }
 
         template<typename T>
         void set(const Key k, const T& value) { m_data[k] = value; }
@@ -59,7 +59,7 @@ namespace stdext
         size_t size() const { return m_data.size(); }
 
     private:
-        std::array<anyType, _Size> m_data{};
+        std::array<std::any, _Size> m_data{};
     };
 
     template<OnlyEnum Key>
@@ -79,7 +79,7 @@ namespace stdext
             }
 
             try {
-                return any_cast<T>(it->second);
+                return std::any_cast<T>(it->second);
             } catch (std::exception&) {
                 return T();
             }
@@ -92,6 +92,6 @@ namespace stdext
         void clear() { m_data.clear(); }
 
     private:
-        stdext::map<Key, anyType> m_data;
+        stdext::map<Key, std::any> m_data;
     };
 }

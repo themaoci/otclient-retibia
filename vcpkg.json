@@ -1,0 +1,27 @@
+{
+  "name": "otclient",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "asio",
+    "libogg",
+    "libvorbis",
+    "nlohmann-json",
+    "openal-soft",
+    "openssl",
+    "physfs",
+    "protobuf",
+    "zlib",
+    "liblzma",
+    "parallel-hashmap",
+    "stduuid",
+    "luajit",
+    {
+      "name": "opengl",
+      "platform": "windows | linux"
+    },
+    {
+      "name": "glew",
+      "platform": "windows | osx"
+    }
+  ]
+}

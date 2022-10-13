@@ -127,11 +127,11 @@ if NOT EXIST "../src/protobuf/appearances.pb.cc" (
 WHERE git
 IF %ERRORLEVEL% EQU 0 (
 	IF EXIST ../.git/ (
-	  echo | set /p dummyName=#define GIT_BRANCH &gt; ../src/gitinfo.h
+	  echo | set /p dummyName=#define GIT_BRANCH &gt;&gt; ../src/gitinfo.h
 	  git rev-parse --abbrev-ref HEAD &gt;&gt; ../src/gitinfo.h
 
 	  echo | set /p dummyName=#define GIT_VERSION &gt;&gt; ../src/gitinfo.h
-	  git describe --abbrev=0 --tag &gt;&gt; ../src/gitinfo.h
+	  git rev-parse --short HEAD &gt;&gt; ../src/gitinfo.h
 
 	  echo | set /p dummyName=#define GIT_COMMITS &gt;&gt; ../src/gitinfo.h
 	  git rev-list --count head &gt;&gt; ../src/gitinfo.h

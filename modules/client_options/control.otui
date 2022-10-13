@@ -59,7 +59,7 @@ Panel
     anchors.right: parent.right
     anchors.top: prev.bottom
     margin-top: 3
-    minimum: 50
+    minimum: 5
     maximum: 250
 
   Button

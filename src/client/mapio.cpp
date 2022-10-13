@@ -68,7 +68,7 @@ void Map::loadOtbm(const std::string& fileName)
         const uint32_t headerMajorItems = root->getU8();
         if (headerMajorItems > g_things.getOtbMajorVersion()) {
             throw Exception("This map was saved with different OTB version. read %d what it's supposed to be: %d",
-                                                   headerMajorItems, g_things.getOtbMajorVersion());
+                            headerMajorItems, g_things.getOtbMajorVersion());
         }
 
         root->skip(3);
@@ -155,7 +155,7 @@ void Map::loadOtbm(const std::string& fileName)
                             default:
                             {
                                 throw Exception("invalid tile attribute %d at pos %s",
-                                                                       static_cast<int>(tileAttr), stdext::to_string(pos));
+                                                static_cast<int>(tileAttr), stdext::to_string(pos));
                             }
                         }
                     }
@@ -230,7 +230,7 @@ void Map::loadOtbm(const std::string& fileName)
         }
 
         fin->close();
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to load '%s': %s", fileName, e.what()));
     }
 }
@@ -301,7 +301,9 @@ void Map::saveOtbm(const std::string& fileName)
                 root->addU8(OTBM_ATTR_HOUSE_FILE);
                 root->addString(houseFile);
 
-                int px = -1, py = -1, pz = -1;
+                int px = -1;
+                int py = -1;
+                int pz = -1;
                 bool firstNode = true;
 
                 for (uint8_t z = 0; z <= MAX_Z; ++z) {
@@ -316,8 +318,8 @@ void Map::saveOtbm(const std::string& fileName)
                                 continue;
 
                             if (pos.x < px || pos.x >= px + 256
-                               || pos.y < py || pos.y >= py + 256
-                               || pos.z != pz) {
+                                || pos.y < py || pos.y >= py + 256
+                                || pos.z != pz) {
                                 if (!firstNode)
                                     root->endNode(); /// OTBM_TILE_AREA
 
@@ -346,7 +348,7 @@ void Map::saveOtbm(const std::string& fileName)
                                 // Those types are called "complex" needs other stuff to be written.
                                 // For containers, there is container items, for depot, depot it and so on.
                                 if (!ground->isContainer() && !ground->isDepot()
-                                   && !ground->isDoor() && !ground->isTeleport()) {
+                                    && !ground->isDoor() && !ground->isTeleport()) {
                                     root->addU8(OTBM_ATTR_ITEM);
                                     root->addU16(ground->getServerId());
                                 } else
@@ -396,7 +398,7 @@ void Map::saveOtbm(const std::string& fileName)
 
         fin->flush();
         fin->close();
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to save '%s': %s", fileName, e.what()));
     }
 }
@@ -410,8 +412,7 @@ bool Map::loadOtcm(const std::string& fileName)
 
         fin->cache();
 
-        const uint32_t signature = fin->getU32();
-        if (signature != OTCM_SIGNATURE)
+        if (const uint32_t signature = fin->getU32(); signature != OTCM_SIGNATURE)
             throw Exception("invalid otcm file");
 
         const uint16_t start = fin->getU16();
@@ -473,7 +474,7 @@ bool Map::loadOtcm(const std::string& fileName)
         fin->close();
 
         return true;
-    } catch (stdext::exception& e) {
+    } catch (const stdext::exception& e) {
         g_logger.error(stdext::format("failed to load OTCM map: %s", e.what()));
         return false;
     }
@@ -543,7 +544,7 @@ void Map::saveOtcm(const std::string& fileName)
         fin->flush();
 
         fin->close();
-    } catch (stdext::exception& e) {
+    } catch (const stdext::exception& e) {
         g_logger.error(stdext::format("failed to save OTCM map: %s", e.what()));
     }
 }

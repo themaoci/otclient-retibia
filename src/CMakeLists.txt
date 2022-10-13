@@ -13,6 +13,7 @@ option(TOGGLE_BOT_PROTECTION "Use bot protection" ON)
 option(TOGGLE_PRE_COMPILED_HEADER "Use precompiled header (speed up compile)" OFF)
 option(DEBUG_LOG "Enable Debug Log" OFF)
 option(ASAN_ENABLED "Build this target with AddressSanitizer" OFF)
+option(BUILD_STATIC_LIBRARY "Build using static libraries" OFF)
 
 # *****************************************************************************
 # Cmake Features
@@ -45,6 +46,9 @@ endif()
 if (TOGGLE_FRAMEWORK_NET)
 	set(FRAMEWORK_DEFINITIONS ${FRAMEWORK_DEFINITIONS} -DFRAMEWORK_NET)
 endif()
+if (ANDROID)
+	set(FRAMEWORK_DEFINITIONS ${FRAMEWORK_DEFINITIONS} -DOPENGL_ES=2)
+endif()
 
 # Set for use bot protection
 if(TOGGLE_BOT_PROTECTION)
@@ -71,6 +75,8 @@ set(VERSION "1.0.0")
 # *****************************************************************************
 if (MSVC)
 	add_executable(${PROJECT_NAME} "" ../cmake/icon/otcicon.rc)
+elseif(ANDROID)
+	add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 else()
 	add_executable(${PROJECT_NAME} "")
 endif()
@@ -168,11 +174,13 @@ find_package(LibLZMA REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(asio REQUIRED)
 find_package(Threads REQUIRED)
-# OpenGL/GLEW = Graphics
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
 find_package(STDUUID CONFIG REQUIRED)
-if(UNIX)
+if(APPLE)
+	# Required for Physfs
+	find_library(FOUNDATION Foundation REQUIRED)
+	find_library(IOKIT IOKit REQUIRED)
+endif()
+if(UNIX AND NOT ANDROID)
 	find_package(X11 REQUIRED)
 endif()
 find_package(LuaJIT REQUIRED)
@@ -191,12 +199,23 @@ if(TOGGLE_FRAMEWORK_SOUND)
 	find_package(Vorbis CONFIG REQUIRED)
 	find_package(Ogg CONFIG REQUIRED)
 endif()
+if(ANDROID)
+	set(LUA_LIBRARY ${LUA_LIBRARY} ${Android_LIBRARIES}/liblua.a)
+	set(LUAJIT_LIBRARY ${LUAJIT_LIBRARY} ${Android_LIBRARIES}/libluajit.a)
+	set(OpenAL_LIBRARY ${OpenAL_LIBRARY} ${Android_LIBRARIES}/libopenal.a)
+	set(MINIZIP_INCLUDE_DIR ${MINIZIP_INCLUDE_DIR} ${Android_INCLUDES}/minizip)
+	set(MINIZIP_LIBRARY ${MINIZIP_LIBRARY} ${Android_LIBRARIES}/libminizip.a)
+	find_package(game-activity REQUIRED CONFIG)
+	find_package(EGL REQUIRED)
+else()
+	find_package(OpenGL REQUIRED)
+	find_package(GLEW REQUIRED)
+endif()
 
 # *****************************************************************************
 # OTClient source files configuration
 # *****************************************************************************
-target_sources(${PROJECT_NAME}
-	PRIVATE
+set(SOURCE_FILES
 	client/animatedtext.cpp
 	client/animator.cpp
 	client/client.cpp
@@ -255,6 +274,8 @@ target_sources(${PROJECT_NAME}
 	framework/core/modulemanager.cpp
 	framework/core/resourcemanager.cpp
 	framework/core/scheduledevent.cpp
+	framework/core/unzipper.cpp
+	framework/core/unzipper.h
 	framework/core/timer.cpp
 	framework/graphics/animatedtexture.cpp
 	framework/graphics/apngloader.cpp
@@ -299,6 +320,11 @@ target_sources(${PROJECT_NAME}
 	framework/otml//otmlexception.cpp
 	framework/otml//otmlnode.cpp
 	framework/otml//otmlparser.cpp
+	framework/platform/androidgameactivity.cpp
+	framework/platform/androidmanager.cpp
+	framework/platform/androidmanager.h
+	framework/platform/androidwindow.cpp
+	framework/platform/androidwindow.h
 	framework/platform/platform.cpp
 	framework/platform/platformwindow.cpp
 	framework/platform/unixcrashhandler.cpp
@@ -307,19 +333,12 @@ target_sources(${PROJECT_NAME}
 	framework/platform/win32platform.cpp
 	framework/platform/win32window.cpp
 	framework/platform/x11window.cpp
-	framework/sound/combinedsoundsource.cpp
-	framework/sound/oggsoundfile.cpp
-	framework/sound/soundbuffer.cpp
-	framework/sound/soundchannel.cpp
-	framework/sound/soundfile.cpp
-	framework/sound/soundmanager.cpp
-	framework/sound/soundsource.cpp
-	framework/sound/streamsoundsource.cpp
 	framework/stdext/demangle.cpp
 	framework/stdext/math.cpp
 	framework/stdext/net.cpp
 	framework/stdext/string.cpp
 	framework/stdext/time.cpp
+	framework/stdext/uri.cpp
 	framework/ui/uianchorlayout.cpp
 	framework/ui/uiboxlayout.cpp
 	framework/ui/uigridlayout.cpp
@@ -342,7 +361,23 @@ target_sources(${PROJECT_NAME}
 	framework/xml/tinyxmlparser.cpp
 	protobuf/appearances.pb.cc
 	main.cpp
+	androidmain.cpp
 )
+
+if (TOGGLE_FRAMEWORK_SOUND)
+	set(SOURCE_FILES ${SOURCE_FILES}
+		framework/sound/combinedsoundsource.cpp
+		framework/sound/oggsoundfile.cpp
+		framework/sound/soundbuffer.cpp
+		framework/sound/soundchannel.cpp
+		framework/sound/soundfile.cpp
+		framework/sound/soundmanager.cpp
+		framework/sound/soundsource.cpp
+		framework/sound/streamsoundsource.cpp
+	)
+endif()
+
+target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES})
 
 # *****************************************************************************
 # Includes and librarys
@@ -360,7 +395,15 @@ if(MSVC)
 		string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
 	endif()
 
-	target_compile_options(${PROJECT_NAME} PUBLIC /MP /FS /Zf )
+	if(BUILD_STATIC_LIBRARY)
+		log_option_enabled("STATIC_LIBRARY")
+		set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
+		find_package(Vorbis REQUIRED)
+		set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	else()
+		log_option_disabled("STATIC_LIBRARY")
+		target_compile_options(${PROJECT_NAME} PUBLIC /MP /FS /Zf /EHsc )
+	endif()
 
 	target_include_directories(${PROJECT_NAME}
 		PRIVATE
@@ -399,6 +442,47 @@ if(MSVC)
 		OpenAL::OpenAL
 		LibLZMA::LibLZMA
 	)
+elseif(ANDROID)
+	target_include_directories(${PROJECT_NAME}
+		PRIVATE
+		${CMAKE_SOURCE_DIR}/src
+		${LUAJIT_INCLUDE_DIR}
+		${CMAKE_THREAD_LIBS_INIT}
+		${Protobuf_INCLUDE_DIRS}
+		${GMP_INCLUDE_DIR}
+		${OPENSSL_INCLUDE_DIR}
+		${PHYSFS_INCLUDE_DIR}
+		${EGL_INCLUDE_DIR}
+		${PARALLEL_HASHMAP_INCLUDE_DIRS}
+		${NLOHMANN_JSON_INCLUDE_DIR}
+		${MINIZIP_INCLUDE_DIR}
+	)
+	target_link_libraries(${PROJECT_NAME}
+		PRIVATE
+		${LUA_LIBRARY}
+		${LUAJIT_LIBRARY}
+		${PHYSFS_LIBRARY}
+		${ZLIB_LIBRARY}
+		${PROTOBUF_LIBRARY}
+		${NLOHMANN_JSON_LIBRARY}
+		${EGL_LIBRARY}
+		${OGG_LIBRARY}
+		${GMP_LIBRARY}
+		${OpenAL_LIBRARY}
+		${OPENSSL_LIBRARIES}
+		${STDUUID}
+		${MINIZIP_LIBRARY}
+
+		Threads::Threads
+		asio::asio
+		Vorbis::vorbis
+		Vorbis::vorbisfile
+		LibLZMA::LibLZMA
+		game-activity::game-activity
+		GLESv3
+		android
+		log
+	)
 else()
 	target_include_directories(${PROJECT_NAME}
 		PRIVATE
@@ -428,6 +512,8 @@ else()
 		${GMP_LIBRARY}
 		${OPENSSL_LIBRARIES}
 		${STDUUID}
+		${FOUNDATION}
+		${IOKIT}
 
 		Threads::Threads
 		X11::X11

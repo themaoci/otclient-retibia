@@ -61,7 +61,7 @@ Creature::Creature() :m_type(Proto::CreatureTypeUnknown)
     */
 }
 
-void Creature::draw(const Point& dest, float scaleFactor, bool animate, uint32_t flags, const Highlight& highLight, TextureType textureType, Color color, LightView* lightView)
+void Creature::draw(const Point& dest, float scaleFactor, bool animate, uint32_t flags, TextureType textureType, bool isMarked, LightView* lightView)
 {
     if (!canBeSeen())
         return;
@@ -75,10 +75,10 @@ void Creature::draw(const Point& dest, float scaleFactor, bool animate, uint32_t
             g_drawPool.addBoundingRect(Rect(dest + (m_walkOffset - getDisplacement()) * scaleFactor, Size(SPRITE_SIZE * scaleFactor)), m_staticSquareColor, std::max<int>(static_cast<int>(2 * scaleFactor), 1));
         }
 
-        internalDrawOutfit(dest + m_walkOffset * scaleFactor, scaleFactor, animate, textureType, m_direction, color);
+        internalDrawOutfit(dest + m_walkOffset * scaleFactor, scaleFactor, animate, textureType, m_direction, Color::white);
 
-        if (highLight.enabled && this == highLight.thing) {
-            internalDrawOutfit(dest + m_walkOffset * scaleFactor, scaleFactor, animate, TextureType::ALL_BLANK, m_direction, highLight.rgbColor);
+        if (isMarked) {
+            internalDrawOutfit(dest + m_walkOffset * scaleFactor, scaleFactor, animate, TextureType::ALL_BLANK, m_direction, getMarkedColor());
         }
     }
 
@@ -104,9 +104,9 @@ void Creature::internalDrawOutfit(Point dest, float scaleFactor, bool animateWal
     if (m_outfitColor != Color::white)
         color = m_outfitColor;
 
-    const bool isNotBlank = textureType != TextureType::ALL_BLANK,
-        canDrawShader = isNotBlank;
-    animateWalk = true;
+    const bool isNotBlank = textureType != TextureType::ALL_BLANK;
+    const bool canDrawShader = isNotBlank;
+
     int animationPhase = 0;
 
     // outfit is a real creature
@@ -159,8 +159,8 @@ void Creature::internalDrawOutfit(Point dest, float scaleFactor, bool animateWal
     } else {
         const auto& type = g_things.getThingType(m_outfit.getAuxId(), m_outfit.getCategory());
 
-        int animationPhases = type->getAnimationPhases(),
-            animateTicks = ITEM_TICKS_PER_FRAME;
+        int animationPhases = type->getAnimationPhases();
+        int animateTicks = ITEM_TICKS_PER_FRAME;
 
         // when creature is an effect we cant render the first and last animation phase,
         // instead we should loop in the phases between
@@ -224,8 +224,8 @@ void Creature::drawInformation(const MapPosInfo& mapRect, const Point& dest, flo
     // calculate main rects
 
     const Size nameSize = m_nameCache.getTextSize();
-    const int cropSizeText = ADJUST_CREATURE_INFORMATION_BASED_ON_CROP_SIZE ? m_sizeCache.exactSize : 12,
-        cropSizeBackGround = ADJUST_CREATURE_INFORMATION_BASED_ON_CROP_SIZE ? cropSizeText - nameSize.height() : 0;
+    const int cropSizeText = ADJUST_CREATURE_INFORMATION_BASED_ON_CROP_SIZE ? m_sizeCache.exactSize : 12;
+    const int cropSizeBackGround = ADJUST_CREATURE_INFORMATION_BASED_ON_CROP_SIZE ? cropSizeText - nameSize.height() : 0;
 
     auto backgroundRect = Rect(p.x - (13.5), p.y - cropSizeBackGround, 27, 4);
     backgroundRect.bind(parentRect);
@@ -274,23 +274,23 @@ void Creature::drawInformation(const MapPosInfo& mapRect, const Point& dest, flo
         }
 
         if (m_skull != Otc::SkullNone && m_skullTexture) {
-            const auto skullRect = Rect(backgroundRect.x() + 13.5 + 12, backgroundRect.y() + 5, m_skullTexture->getSize());
+            const auto& skullRect = Rect(backgroundRect.x() + 13.5 + 12, backgroundRect.y() + 5, m_skullTexture->getSize());
             g_drawPool.addTexturedRect(skullRect, m_skullTexture);
         }
         if (m_shield != Otc::ShieldNone && m_shieldTexture && m_showShieldTexture) {
-            const auto shieldRect = Rect(backgroundRect.x() + 13.5, backgroundRect.y() + 5, m_shieldTexture->getSize());
+            const auto& shieldRect = Rect(backgroundRect.x() + 13.5, backgroundRect.y() + 5, m_shieldTexture->getSize());
             g_drawPool.addTexturedRect(shieldRect, m_shieldTexture);
         }
         if (m_emblem != Otc::EmblemNone && m_emblemTexture) {
-            const auto emblemRect = Rect(backgroundRect.x() + 13.5 + 12, backgroundRect.y() + 16, m_emblemTexture->getSize());
+            const auto& emblemRect = Rect(backgroundRect.x() + 13.5 + 12, backgroundRect.y() + 16, m_emblemTexture->getSize());
             g_drawPool.addTexturedRect(emblemRect, m_emblemTexture);
         }
         if (m_type != Proto::CreatureTypeUnknown && m_typeTexture) {
-            const auto typeRect = Rect(backgroundRect.x() + 13.5 + 12 + 12, backgroundRect.y() + 16, m_typeTexture->getSize());
+            const auto& typeRect = Rect(backgroundRect.x() + 13.5 + 12 + 12, backgroundRect.y() + 16, m_typeTexture->getSize());
             g_drawPool.addTexturedRect(typeRect, m_typeTexture);
         }
         if (m_icon != Otc::NpcIconNone && m_iconTexture) {
-            const auto iconRect = Rect(backgroundRect.x() + 13.5 + 12, backgroundRect.y() + 5, m_iconTexture->getSize());
+            const auto& iconRect = Rect(backgroundRect.x() + 13.5 + 12, backgroundRect.y() + 5, m_iconTexture->getSize());
             g_drawPool.addTexturedRect(iconRect, m_iconTexture);
         }
     }
@@ -369,12 +369,12 @@ void Creature::updateJump()
     }
 
     const int t = m_jumpTimer.ticksElapsed();
-    const double a = -4 * m_jumpHeight / (m_jumpDuration * m_jumpDuration),
-        b = +4 * m_jumpHeight / m_jumpDuration,
-        height = a * t * t + b * t;
+    const double a = -4 * m_jumpHeight / (m_jumpDuration * m_jumpDuration);
+    const double b = +4 * m_jumpHeight / m_jumpDuration;
+    const double height = a * t * t + b * t;
 
-    const int roundHeight = std::round(height),
-        halfJumpDuration = m_jumpDuration / 2;
+    const int roundHeight = std::round(height);
+    const int halfJumpDuration = m_jumpDuration / 2;
 
     m_jumpOffset = PointF(height, height);
 
@@ -382,7 +382,9 @@ void Creature::updateJump()
         g_map.notificateCameraMove(m_walkOffset);
     }
 
-    int nextT = 0, diff = 0, i = 1;
+    int nextT = 0;
+    int diff = 0;
+    int i = 1;
     if (m_jumpTimer.ticksElapsed() < halfJumpDuration)
         diff = 1;
     else if (m_jumpTimer.ticksElapsed() > halfJumpDuration)
@@ -481,8 +483,8 @@ void Creature::updateWalkAnimation()
     if (footAnimPhases == 0)
         return;
 
-    int minFootDelay = 20,
-        footAnimDelay = footAnimPhases;
+    int minFootDelay = 20;
+    int footAnimDelay = footAnimPhases;
 
     if (hasSpeedFormula()) {
         minFootDelay += 10;
@@ -572,8 +574,8 @@ void Creature::updateWalk(const bool isPreWalking)
 {
     const uint32_t stepDuration = getStepDuration(true);
 
-    const float extraSpeed = isLocalPlayer() && !hasSpeedFormula() ? 800.f / static_cast<float>(stepDuration) : 0.f,
-        walkTicksPerPixel = (stepDuration + extraSpeed) / SPRITE_SIZE;
+    const float extraSpeed = isLocalPlayer() && !hasSpeedFormula() ? 800.f / static_cast<float>(stepDuration) : 0.f;
+    const float walkTicksPerPixel = (stepDuration + extraSpeed) / SPRITE_SIZE;
 
     const int totalPixelsWalked = std::min<int>((m_walkTimer.ticksElapsed() / walkTicksPerPixel), SPRITE_SIZE);
 
@@ -850,7 +852,7 @@ uint64_t Creature::getStepDuration(bool ignoreDiagonal, Otc::Direction dir)
         } else stepDuration /= m_speed;
 
         if (FORCE_NEW_WALKING_FORMULA || g_game.getClientVersion() >= 860) {
-            const auto serverBeat = g_game.getServerBeat();
+            const int serverBeat = g_game.getServerBeat();
             stepDuration = std::ceil(stepDuration / serverBeat) * serverBeat;
 
             if (isLocalPlayer() && hasSpeedFormula())
@@ -928,7 +930,7 @@ int Creature::getCurrentAnimationPhase(const bool mount)
 {
     const auto& thingType = mount ? getMountThingType() : getThingType();
 
-    const auto idleAnimator = thingType->getIdleAnimator();
+    const auto& idleAnimator = thingType->getIdleAnimator();
     if (idleAnimator) {
         if (m_walkAnimationPhase == 0) return idleAnimator->getPhase();
         return m_walkAnimationPhase + idleAnimator->getAnimationPhases() - 1;
@@ -944,9 +946,9 @@ int Creature::getCurrentAnimationPhase(const bool mount)
 
 int Creature::getExactSize()
 {
-    const int numPatternY = getNumPatternY(),
-        layers = getLayers(),
-        zPattern = m_outfit.hasMount() ? 1 : 0;
+    const int numPatternY = getNumPatternY();
+    const int layers = getLayers();
+    const int zPattern = m_outfit.hasMount() ? 1 : 0;
 
     int exactSize = 0;
     for (int yPattern = 0; yPattern < numPatternY; ++yPattern) {

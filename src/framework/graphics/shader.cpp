@@ -53,7 +53,7 @@ Shader::~Shader()
 bool Shader::compileSourceCode(const std::string_view sourceCode)
 {
 #ifdef OPENGL_ES
-    static constexpr std::string_view =
+    static constexpr std::string_view qualifierDefines =
         "#ifndef GL_FRAGMENT_PRECISION_HIGH\n"
         "#define highp mediump\n"
         "#endif\n"
@@ -81,7 +81,7 @@ bool Shader::compileSourceFile(const std::string_view sourceFile)
     try {
         const auto& sourceCode = g_resources.readFileContents(sourceFile.data());
         return compileSourceCode(sourceCode);
-    } catch (stdext::exception& e) {
+    } catch (const stdext::exception& e) {
         g_logger.error(stdext::format("unable to load shader source form file '%s': %s", sourceFile, e.what()));
     }
     return false;

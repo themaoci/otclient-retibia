@@ -55,11 +55,11 @@ protected:
     bool internalUpdate() override;
 
 private:
-    Size m_cellSize;
-    int m_cellSpacing;
-    int m_numColumns;
-    int m_numLines;
-    bool m_autoSpacing{ false },
-        m_fitChildren{ false },
-        m_flow{ false };
+    Size m_cellSize{ 16 };
+    int m_cellSpacing{ 0 };
+    int m_numColumns{ 1 };
+    int m_numLines{ 0 };
+    bool m_autoSpacing{ false };
+    bool m_fitChildren{ false };
+    bool m_flow{ false };
 };

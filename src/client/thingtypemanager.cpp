@@ -77,7 +77,7 @@ void ThingTypeManager::saveDat(const std::string& fileName)
         throw Exception("failed to save, dat is not loaded");
 
     try {
-        const FileStreamPtr fin = g_resources.createFile(fileName);
+        const auto& fin = g_resources.createFile(fileName);
         if (!fin)
             throw Exception("failed to open file '%s' for write", fileName);
 
@@ -85,7 +85,7 @@ void ThingTypeManager::saveDat(const std::string& fileName)
 
         fin->addU32(m_datSignature);
 
-        for (auto& m_thingType : m_thingTypes)
+        for (const auto& m_thingType : m_thingTypes)
             fin->addU16(m_thingType.size() - 1);
 
         for (int category = 0; category < ThingLastCategory; ++category) {
@@ -99,7 +99,7 @@ void ThingTypeManager::saveDat(const std::string& fileName)
 
         fin->flush();
         fin->close();
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to save '%s': %s", fileName, e.what()));
     }
 }
@@ -112,12 +112,12 @@ bool ThingTypeManager::loadDat(std::string file)
     try {
         file = g_resources.guessFilePath(file, "dat");
 
-        const FileStreamPtr fin = g_resources.openFile(file);
+        const auto& fin = g_resources.openFile(file);
         fin->cache();
 
-    #if ENABLE_ENCRYPTION == 1
+#if ENABLE_ENCRYPTION == 1
         ResourceManager::decrypt(fin->m_data.data(), fin->m_data.size());
-    #endif
+#endif
 
         m_datSignature = fin->getU32();
         m_contentRevision = static_cast<uint16_t>(m_datSignature);
@@ -132,7 +132,7 @@ bool ThingTypeManager::loadDat(std::string file)
             const uint16_t firstId = category == ThingCategoryItem ? 100 : 1;
 
             for (uint16_t id = firstId - 1, s = m_thingTypes[category].size(); ++id < s;) {
-                const ThingTypePtr type(new ThingType);
+                const ThingTypePtr& type(new ThingType);
                 type->unserialize(id, static_cast<ThingCategory>(category), fin);
                 m_thingTypes[category][id] = type;
             }
@@ -141,7 +141,7 @@ bool ThingTypeManager::loadDat(std::string file)
         m_datLoaded = true;
         g_lua.callGlobalField("g_things", "onLoadDat", file);
         return true;
-    } catch (stdext::exception& e) {
+    } catch (const stdext::exception& e) {
         g_logger.error(stdext::format("Failed to read dat '%s': %s'", file, e.what()));
         return false;
     }
@@ -152,8 +152,8 @@ bool ThingTypeManager::loadOtml(std::string file)
     try {
         file = g_resources.guessFilePath(file, "otml");
 
-        const OTMLDocumentPtr doc = OTMLDocument::parse(file);
-        for (const OTMLNodePtr& node : doc->children()) {
+        const auto& doc = OTMLDocument::parse(file);
+        for (const auto& node : doc->children()) {
             ThingCategory category;
             if (node->tag() == "creatures")
                 category = ThingCategoryCreature;
@@ -176,7 +176,7 @@ bool ThingTypeManager::loadOtml(std::string file)
             }
         }
         return true;
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to read dat otml '%s': %s'", file, e.what()));
         return false;
     }
@@ -185,24 +185,22 @@ bool ThingTypeManager::loadOtml(std::string file)
 void ThingTypeManager::loadOtb(const std::string& file)
 {
     try {
-        const FileStreamPtr fin = g_resources.openFile(file);
+        const auto& fin = g_resources.openFile(file);
         fin->cache();
 
         uint32_t signature = fin->getU32();
         if (signature != 0)
             throw Exception("invalid otb file");
 
-        const BinaryTreePtr root = fin->getBinaryTree();
+        const auto& root = fin->getBinaryTree();
         root->skip(1); // otb first byte is always 0
 
         signature = root->getU32();
         if (signature != 0)
             throw Exception("invalid otb file");
 
-        const uint8_t rootAttr = root->getU8();
-        if (rootAttr == 0x01) { // OTB_ROOT_ATTR_VERSION
-            const uint16_t size = root->getU16();
-            if (size != 4 + 4 + 4 + 128)
+        if (const uint8_t rootAttr = root->getU8(); rootAttr == 0x01) { // OTB_ROOT_ATTR_VERSION
+            if (const uint16_t size = root->getU16(); size != 4 + 4 + 4 + 128)
                 throw Exception("invalid otb root attr version size");
 
             m_otbMajorVersion = root->getU32();
@@ -217,7 +215,7 @@ void ThingTypeManager::loadOtb(const std::string& file)
         m_reverseItemTypes.resize(children.size() + 1, m_nullItemType);
 
         for (const BinaryTreePtr& node : children) {
-            ItemTypePtr itemType(new ItemType);
+            const ItemTypePtr& itemType(new ItemType);
             itemType->unserialize(node);
             addItemType(itemType);
 
@@ -229,7 +227,7 @@ void ThingTypeManager::loadOtb(const std::string& file)
 
         m_otbLoaded = true;
         g_lua.callGlobalField("g_things", "onLoadOtb", file);
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to load '%s' (OTB file): %s", file, e.what()));
     }
 }
@@ -280,7 +278,7 @@ void ThingTypeManager::loadXml(const std::string& file)
         doc.Clear();
         m_xmlLoaded = true;
         g_logger.debug("items.xml read successfully.");
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to load '%s' (XML file): %s", file, e.what()));
     }
 }
@@ -332,7 +330,7 @@ bool ThingTypeManager::loadAppearances(const std::string& file)
             things.resize(lastAppearance.id() + 1, m_nullThingType);
 
             for (const auto& appearance : *appearances) {
-                const ThingTypePtr type(new ThingType);
+                const ThingTypePtr& type(new ThingType);
                 const uint16_t id = appearance.id();
                 type->unserializeAppearance(id, static_cast<ThingCategory>(category), appearance);
                 m_thingTypes[category][id] = type;
@@ -340,7 +338,7 @@ bool ThingTypeManager::loadAppearances(const std::string& file)
         }
         m_datLoaded = true;
         return true;
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to load '%s' (Appearances): %s", file, e.what()));
         return false;
     }
@@ -348,8 +346,6 @@ bool ThingTypeManager::loadAppearances(const std::string& file)
 
 void ThingTypeManager::parseItemType(uint16_t serverId, TiXmlElement* elem)
 {
-    ItemTypePtr itemType = nullptr;
-
     bool s;
     int d;
 
@@ -361,6 +357,7 @@ void ThingTypeManager::parseItemType(uint16_t serverId, TiXmlElement* elem)
         d = 30000;
     }
 
+    ItemTypePtr itemType;
     if (s) {
         serverId -= d;
         itemType = ItemTypePtr(new ItemType);

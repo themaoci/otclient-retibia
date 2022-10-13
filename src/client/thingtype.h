@@ -34,12 +34,7 @@
 
 using namespace otclient::protobuf;
 
-enum class TextureType
-{
-    NONE,
-    SMOOTH,
-    ALL_BLANK
-};
+enum class TextureType { NONE, SMOOTH, ALL_BLANK };
 
 enum FrameGroupType : uint8_t
 {
@@ -100,6 +95,11 @@ enum ThingAttr : uint8_t
     ThingAttrUnwrapable = 36,
     ThingAttrTopEffect = 37,
     ThingAttrUpgradeClassification = 38,
+    ThingAttrWearOut = 39,
+    ThingAttrClockExpire = 40,
+    ThingAttrExpire = 41,
+    ThingAttrExpireStop = 42,
+    ThingAttrPodium = 43,
 
     // additional
     ThingAttrOpacity = 100,
@@ -252,6 +252,11 @@ public:
     bool isUsable() { return m_attribs.has(ThingAttrUsable); }
     bool isWrapable() { return m_attribs.has(ThingAttrWrapable); }
     bool isUnwrapable() { return m_attribs.has(ThingAttrUnwrapable); }
+    bool hasWearOut() { return m_attribs.has(ThingAttrWearOut); }
+    bool hasClockExpire() { return m_attribs.has(ThingAttrClockExpire); }
+    bool hasExpire() { return m_attribs.has(ThingAttrExpire); }
+    bool hasExpireStop() { return m_attribs.has(ThingAttrExpireStop); }
+    bool isPodium() { return m_attribs.has(ThingAttrPodium); }
     bool isTopEffect() { return m_attribs.has(ThingAttrTopEffect); }
     bool hasAction() { return m_attribs.has(ThingAttrDefaultAction); }
     bool isOpaque() { getTexture(0); return m_opaque; }
@@ -277,10 +282,10 @@ private:
     ThingCategory m_category{ ThingInvalidCategory };
     uint16_t m_id{ 0 };
 
-    bool m_null{ true },
-        m_opaque{ false };
+    bool m_null{ true };
+    bool m_opaque{ false };
 
-    stdext::small_dynamic_storage<ThingAttr, ThingLastAttr> m_attribs;
+    stdext::small_storage<ThingAttr, ThingLastAttr> m_attribs;
 
     Size m_size;
     Point m_displacement;
@@ -289,9 +294,9 @@ private:
     int m_animationPhases{ 0 };
     int m_exactSize{ 0 };
     int m_realSize{ 0 };
-    int m_numPatternX{ 0 },
-        m_numPatternY{ 0 },
-        m_numPatternZ{ 0 };
+    int m_numPatternX{ 0 };
+    int m_numPatternY{ 0 };
+    int m_numPatternZ{ 0 };
     int m_layers{ 0 };
     int m_exactHeight{ 0 };
     float m_opacity{ 1.f };
@@ -299,9 +304,9 @@ private:
 
     std::vector<int> m_spritesIndex;
 
-    std::vector<TexturePtr> m_textures,
-        m_blankTextures,
-        m_smoothTextures;
+    std::vector<TexturePtr> m_textures;
+    std::vector<TexturePtr> m_blankTextures;
+    std::vector<TexturePtr> m_smoothTextures;
 
     std::vector<std::vector<Rect>> m_texturesFramesRects;
     std::vector<std::vector<Rect>> m_texturesFramesOriginRects;

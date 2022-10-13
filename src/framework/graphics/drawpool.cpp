@@ -55,10 +55,11 @@ void DrawPool::add(const Color& color, const TexturePtr& texture, const DrawMeth
        m_state.clipRect, texture, m_state.shaderProgram
     };
 
-    size_t stateHash = 0, methodHash = 0;
+    size_t stateHash = 0;
+    size_t methodHash = 0;
     updateHash(state, method, stateHash, methodHash);
 
-    if (m_type != DrawPoolType::FOREGROUND && (m_alwaysGroupDrawings || drawBuffer && drawBuffer->m_agroup)) {
+    if (m_type != DrawPoolType::FOREGROUND && (m_alwaysGroupDrawings || (drawBuffer && drawBuffer->m_agroup))) {
         if (auto it = m_objectsByhash.find(stateHash); it != m_objectsByhash.end()) {
             const auto& buffer = it->second.buffer;
 
@@ -104,14 +105,14 @@ void DrawPool::add(const Color& color, const TexturePtr& texture, const DrawMeth
         }
 
         m_objectsByhash.emplace(stateHash,
-              m_objects[m_currentFloor][m_currentOrder = static_cast<uint8_t>(buffer->m_order)]
-                       .emplace_back(state, buffer));
+            m_objects[m_currentFloor][m_currentOrder = static_cast<uint8_t>(buffer->m_order)]
+            .emplace_back(state, buffer));
 
         return;
     }
 
     m_currentOrder = static_cast<uint8_t>(m_type == DrawPoolType::FOREGROUND ? DrawPool::DrawOrder::FIRST :
-                                          drawBuffer ? drawBuffer->m_order : DrawPool::DrawOrder::THIRD);
+        drawBuffer ? drawBuffer->m_order : DrawPool::DrawOrder::THIRD);
 
     auto& list = m_objects[m_currentFloor][m_currentOrder];
 
@@ -126,7 +127,7 @@ void DrawPool::add(const Color& color, const TexturePtr& texture, const DrawMeth
             for (auto itm = drawMethods.begin(); itm != drawMethods.end(); ++itm) {
                 auto& prevMtd = *itm;
                 if (prevMtd.dest == method.dest &&
-                   ((sameState && prevMtd.rects->second == method.rects->second) || (state.texture->isOpaque() && prevObj.state->texture->canSuperimposed()))) {
+                    ((sameState && prevMtd.rects->second == method.rects->second) || (state.texture->isOpaque() && prevObj.state->texture->canSuperimposed()))) {
                     drawMethods.erase(itm);
                     break;
                 }
@@ -180,7 +181,7 @@ void DrawPool::addCoords(const DrawMethod& method, CoordsBuffer& buffer, DrawMod
 }
 
 void DrawPool::updateHash(const PoolState& state, const DrawMethod& method,
-                            size_t& stateHash, size_t& methodhash)
+    size_t& stateHash, size_t& methodhash)
 {
     { // State Hash
         if (state.blendEquation != BlendEquation::ADD)
@@ -220,9 +221,9 @@ void DrawPool::updateHash(const PoolState& state, const DrawMethod& method,
 
         if (method.points.has_value()) {
             const auto& points = *method.points;
-            const auto& a = std::get<0>(points),
-                & b = std::get<1>(points),
-                & c = std::get<2>(points);
+            const auto& a = std::get<0>(points);
+            const auto& b = std::get<1>(points);
+            const auto& c = std::get<2>(points);
 
             if (!a.isNull()) stdext::hash_union(methodhash, a.hash());
             if (!b.isNull()) stdext::hash_union(methodhash, b.hash());

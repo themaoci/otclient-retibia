@@ -49,18 +49,10 @@ public:
     void log(Fw::LogLevel level, const std::string_view message);
     void logFunc(Fw::LogLevel level, const std::string_view message, const std::string_view prettyFunction);
 
-    void debug(const std::string_view what) { 
-        log(Fw::LogDebug, what); 
-    }
-    void info(const std::string_view what) { 
-        log(Fw::LogInfo, what); 
-    }
-    void warning(const std::string_view what) { 
-        log(Fw::LogWarning, what); 
-    }
-    void error(const std::string_view what) { 
-        log(Fw::LogError, what);
-    }
+    void debug(const std::string_view what) { log(Fw::LogDebug, what); }
+    void info(const std::string_view what) { log(Fw::LogInfo, what); }
+    void warning(const std::string_view what) { log(Fw::LogWarning, what); }
+    void error(const std::string_view what) { log(Fw::LogError, what); }
     void fatal(const std::string_view what) { log(Fw::LogFatal, what); }
 
     void fireOldMessages();

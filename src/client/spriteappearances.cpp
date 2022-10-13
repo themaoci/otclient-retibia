@@ -153,7 +153,7 @@ bool SpriteAppearances::loadSpriteSheet(const SpriteSheetPtr& sheet)
         sheet->loaded = true;
         sheet->loading = false;
         return true;
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to load single sprite sheet '%s': %s", sheet->file, e.what()));
         return false;
     }
@@ -199,14 +199,14 @@ SpriteSheetPtr SpriteAppearances::getSheetBySpriteId(int id, bool load /* = true
 ImagePtr SpriteAppearances::getSpriteImage(int id)
 {
     try {
-        const SpriteSheetPtr sheet = getSheetBySpriteId(id);
+        const auto& sheet = getSheetBySpriteId(id);
         if (!sheet) {
             return nullptr;
         }
 
         const Size& size = sheet->getSpriteSize();
 
-        ImagePtr image(new Image(size));
+        const ImagePtr& image(new Image(size));
         uint8_t* pixelData = image->getPixelData();
 
         const int spriteOffset = id - sheet->firstId;
@@ -232,7 +232,7 @@ ImagePtr SpriteAppearances::getSpriteImage(int id)
         }
 
         return image;
-    } catch (stdext::exception& e) {
+    } catch (const stdext::exception& e) {
         g_logger.error(stdext::format("Failed to get sprite id %d: %s", id, e.what()));
         return nullptr;
     }
@@ -240,16 +240,14 @@ ImagePtr SpriteAppearances::getSpriteImage(int id)
 
 void SpriteAppearances::saveSpriteToFile(int id, const std::string& file)
 {
-    const ImagePtr sprite = getSpriteImage(id);
-    if (sprite) {
+    if (const auto& sprite = getSpriteImage(id)) {
         sprite->savePNG(file);
     }
 }
 
 void SpriteAppearances::saveSheetToFileBySprite(int id, const std::string& file)
 {
-    const SpriteSheetPtr sheet = getSheetBySpriteId(id);
-    if (sheet) {
+    if (const auto& sheet = getSheetBySpriteId(id)) {
         Image image({ 384 }, 4, sheet->data.get());
         image.savePNG(file);
     }

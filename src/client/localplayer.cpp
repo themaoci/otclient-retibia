@@ -99,8 +99,9 @@ bool LocalPlayer::retryAutoWalk()
                 m_autoWalkContinueEvent->cancel();
 
             m_autoWalkContinueEvent = g_dispatcher.scheduleEvent(
-                [capture0 = asLocalPlayer(), this]{ capture0->autoWalk(m_autoWalkDestination, true); }, 200
+                [capture0 = asLocalPlayer(), this] { capture0->autoWalk(m_autoWalkDestination, true); }, 200
             );
+
             m_autoWalkRetries += 1;
 
             return true;
@@ -130,11 +131,14 @@ void LocalPlayer::cancelWalk(Otc::Direction direction)
     callLuaField("onCancelWalk", direction);
 }
 
-bool LocalPlayer::autoWalk(const Position& destination, const bool retry)
+bool LocalPlayer::autoWalk(const Position& destination, bool retry)
 {
     // reset state
     m_autoWalkDestination = {};
     m_lastAutoWalkPosition = {};
+    if (m_autoWalkContinueEvent)
+        m_autoWalkContinueEvent->cancel();
+    m_autoWalkContinueEvent = nullptr;
 
     if (!retry)
         m_autoWalkRetries = 0;
@@ -145,22 +149,15 @@ bool LocalPlayer::autoWalk(const Position& destination, const bool retry)
     if (m_position.isInRange(destination, 1, 1))
         return g_game.walk(m_position.getDirectionFromPosition(destination));
 
-    std::tuple<std::vector<Otc::Direction>, Otc::PathFindResult> result;
-    std::vector<Otc::Direction> limitedPath;
-
     m_autoWalkDestination = destination;
     auto self(asLocalPlayer());
-    g_map.findPathAsync(m_position, destination, [self](const PathFindResult_ptr& result) {
+    g_map.findPathAsync(m_position, destination, [self](const auto& result) {
         if (self->m_autoWalkDestination != result->destination)
             return;
 
         if (result->status != Otc::PathFindResultOk) {
             if (self->m_autoWalkRetries > 0 && self->m_autoWalkRetries <= 3) { // try again in 300, 700, 1200 ms if canceled by server
-                if (self->m_autoWalkContinueEvent)
-                    self->m_autoWalkContinueEvent->cancel();
-
-                self->m_autoWalkContinueEvent = g_dispatcher.scheduleEvent(
-                    [self, capture0 = result->destination] { self->autoWalk(capture0, true); }, 200 + self->m_autoWalkRetries * 100);
+                self->m_autoWalkContinueEvent = g_dispatcher.scheduleEvent([self, capture0 = result->destination] { self->autoWalk(capture0, true); }, 200 + self->m_autoWalkRetries * 100);
                 return;
             }
             self->m_autoWalkDestination = {};
@@ -177,9 +174,8 @@ bool LocalPlayer::autoWalk(const Position& destination, const bool retry)
             return;
         }
 
-        const auto finalAutowalkPos = self->m_position.translatedToDirections(result->path).back();
-        if (self->m_autoWalkDestination != finalAutowalkPos) {
-            self->m_lastAutoWalkPosition = finalAutowalkPos;
+        if (self->m_autoWalkDestination != result->destination) {
+            self->m_lastAutoWalkPosition = result->destination;
         }
 
         g_game.autoWalk(result->path, result->start);
@@ -252,6 +248,7 @@ void LocalPlayer::setStates(int states)
 {
     if (m_states == states)
         return;
+
     const int oldStates = m_states;
     m_states = states;
 
@@ -303,7 +300,6 @@ void LocalPlayer::setHealth(double health, double maxHealth)
 
         callLuaField("onHealthChange", health, maxHealth, oldHealth, oldMaxHealth);
 
-        // cannot walk while dying
         if (isDead()) {
             if (isPreWalking())
                 stopWalk();
@@ -316,6 +312,7 @@ void LocalPlayer::setFreeCapacity(double freeCapacity)
 {
     if (m_freeCapacity == freeCapacity)
         return;
+
     const double oldFreeCapacity = m_freeCapacity;
     m_freeCapacity = freeCapacity;
 
@@ -326,6 +323,7 @@ void LocalPlayer::setTotalCapacity(double totalCapacity)
 {
     if (m_totalCapacity == totalCapacity)
         return;
+
     const double oldTotalCapacity = m_totalCapacity;
     m_totalCapacity = totalCapacity;
 
@@ -336,6 +334,7 @@ void LocalPlayer::setExperience(double experience)
 {
     if (m_experience == experience)
         return;
+
     const double oldExperience = m_experience;
     m_experience = experience;
 
@@ -346,8 +345,10 @@ void LocalPlayer::setLevel(double level, double levelPercent)
 {
     if (m_level == level && m_levelPercent == levelPercent)
         return;
+
     const double oldLevel = m_level;
     const double oldLevelPercent = m_levelPercent;
+
     m_level = level;
     m_levelPercent = levelPercent;
 
@@ -358,6 +359,7 @@ void LocalPlayer::setMana(double mana, double maxMana)
 {
     if (m_mana == mana && m_maxMana == maxMana)
         return;
+
     const double oldMana = m_mana;
     const double oldMaxMana = m_maxMana;
     m_mana = mana;
@@ -370,8 +372,10 @@ void LocalPlayer::setMagicLevel(double magicLevel, double magicLevelPercent)
 {
     if (m_magicLevel == magicLevel && m_magicLevelPercent == magicLevelPercent)
         return;
+
     const double oldMagicLevel = m_magicLevel;
     const double oldMagicLevelPercent = m_magicLevelPercent;
+
     m_magicLevel = magicLevel;
     m_magicLevelPercent = magicLevelPercent;
 
@@ -380,32 +384,35 @@ void LocalPlayer::setMagicLevel(double magicLevel, double magicLevelPercent)
 
 void LocalPlayer::setBaseMagicLevel(double baseMagicLevel)
 {
-    if (m_baseMagicLevel != baseMagicLevel) {
-        const double oldBaseMagicLevel = m_baseMagicLevel;
-        m_baseMagicLevel = baseMagicLevel;
+    if (m_baseMagicLevel == baseMagicLevel)
+        return;
 
-        callLuaField("onBaseMagicLevelChange", baseMagicLevel, oldBaseMagicLevel);
-    }
+    const double oldBaseMagicLevel = m_baseMagicLevel;
+    m_baseMagicLevel = baseMagicLevel;
+
+    callLuaField("onBaseMagicLevelChange", baseMagicLevel, oldBaseMagicLevel);
 }
 
 void LocalPlayer::setSoul(double soul)
 {
-    if (m_soul != soul) {
-        const double oldSoul = m_soul;
-        m_soul = soul;
+    if (m_soul == soul)
+        return;
 
-        callLuaField("onSoulChange", soul, oldSoul);
-    }
+    const double oldSoul = m_soul;
+    m_soul = soul;
+
+    callLuaField("onSoulChange", soul, oldSoul);
 }
 
 void LocalPlayer::setStamina(double stamina)
 {
-    if (m_stamina != stamina) {
-        const double oldStamina = m_stamina;
-        m_stamina = stamina;
+    if (m_stamina == stamina)
+        return;
 
-        callLuaField("onStaminaChange", stamina, oldStamina);
-    }
+    const double oldStamina = m_stamina;
+    m_stamina = stamina;
+
+    callLuaField("onStaminaChange", stamina, oldStamina);
 }
 
 void LocalPlayer::setInventoryItem(Otc::InventorySlot inventory, const ItemPtr& item)
@@ -415,80 +422,88 @@ void LocalPlayer::setInventoryItem(Otc::InventorySlot inventory, const ItemPtr& 
         return;
     }
 
-    if (m_inventoryItems[inventory] != item) {
-        const ItemPtr oldItem = m_inventoryItems[inventory];
-        m_inventoryItems[inventory] = item;
+    if (m_inventoryItems[inventory] == item)
+        return;
 
-        callLuaField("onInventoryChange", inventory, item, oldItem);
-    }
+    const auto& oldItem = m_inventoryItems[inventory];
+    m_inventoryItems[inventory] = item;
+
+    callLuaField("onInventoryChange", inventory, item, oldItem);
 }
 
 void LocalPlayer::setVocation(int vocation)
 {
-    if (m_vocation != vocation) {
-        const int oldVocation = m_vocation;
-        m_vocation = vocation;
+    if (m_vocation == vocation)
+        return;
 
-        callLuaField("onVocationChange", vocation, oldVocation);
-    }
+    const int oldVocation = m_vocation;
+    m_vocation = vocation;
+
+    callLuaField("onVocationChange", vocation, oldVocation);
 }
 
 void LocalPlayer::setPremium(bool premium)
 {
-    if (m_premium != premium) {
-        m_premium = premium;
+    if (m_premium == premium)
+        return;
 
-        callLuaField("onPremiumChange", premium);
-    }
+    m_premium = premium;
+
+    callLuaField("onPremiumChange", premium);
 }
 
 void LocalPlayer::setRegenerationTime(double regenerationTime)
 {
-    if (m_regenerationTime != regenerationTime) {
-        const double oldRegenerationTime = m_regenerationTime;
-        m_regenerationTime = regenerationTime;
+    if (m_regenerationTime == regenerationTime)
+        return;
 
-        callLuaField("onRegenerationChange", regenerationTime, oldRegenerationTime);
-    }
+    const double oldRegenerationTime = m_regenerationTime;
+    m_regenerationTime = regenerationTime;
+
+    callLuaField("onRegenerationChange", regenerationTime, oldRegenerationTime);
 }
 
 void LocalPlayer::setOfflineTrainingTime(double offlineTrainingTime)
 {
-    if (m_offlineTrainingTime != offlineTrainingTime) {
-        const double oldOfflineTrainingTime = m_offlineTrainingTime;
-        m_offlineTrainingTime = offlineTrainingTime;
+    if (m_offlineTrainingTime == offlineTrainingTime)
+        return;
 
-        callLuaField("onOfflineTrainingChange", offlineTrainingTime, oldOfflineTrainingTime);
-    }
+    const double oldOfflineTrainingTime = m_offlineTrainingTime;
+    m_offlineTrainingTime = offlineTrainingTime;
+
+    callLuaField("onOfflineTrainingChange", offlineTrainingTime, oldOfflineTrainingTime);
 }
 
 void LocalPlayer::setSpells(const std::vector<int>& spells)
 {
-    if (m_spells != spells) {
-        const std::vector<int> oldSpells = m_spells;
-        m_spells = spells;
+    if (m_spells == spells)
+        return;
 
-        callLuaField("onSpellsChange", spells, oldSpells);
-    }
+    const std::vector<int> oldSpells = m_spells;
+    m_spells = spells;
+
+    callLuaField("onSpellsChange", spells, oldSpells);
 }
 
 void LocalPlayer::setBlessings(int blessings)
 {
-    if (blessings != m_blessings) {
-        const int oldBlessings = m_blessings;
-        m_blessings = blessings;
+    if (blessings == m_blessings)
+        return;
 
-        callLuaField("onBlessingsChange", blessings, oldBlessings);
-    }
+    const int oldBlessings = m_blessings;
+    m_blessings = blessings;
+
+    callLuaField("onBlessingsChange", blessings, oldBlessings);
 }
 
 void LocalPlayer::setResourceBalance(Otc::ResourceTypes_t type, uint64_t value)
 {
     const uint64_t oldBalance = getResourceBalance(type);
-    if (value != oldBalance) {
-        m_resourcesBalance[type] = value;
-        g_lua.callGlobalField("g_game", "onResourcesBalanceChange", value, oldBalance, type);
-    }
+    if (value == oldBalance)
+        return;
+
+    m_resourcesBalance[type] = value;
+    g_lua.callGlobalField("g_game", "onResourcesBalanceChange", value, oldBalance, type);
 }
 
 bool LocalPlayer::hasSight(const Position& pos)

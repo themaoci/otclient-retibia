@@ -38,7 +38,7 @@ void ProtocolGame::send(const OutputMessagePtr& outputMessage)
 void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string_view buffer)
 {
     if (m_enableSendExtendedOpcode) {
-        const OutputMessagePtr msg(new OutputMessage);
+        const OutputMessagePtr& msg(new OutputMessage);
         msg->addU8(Proto::ClientExtendedOpcode);
         msg->addU8(opcode);
         msg->addString(buffer);
@@ -50,23 +50,30 @@ void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string_view buf
 
 void ProtocolGame::sendLoginPacket(uint32_t challengeTimestamp, uint8_t challengeRandom)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
+
     msg->addU8(Proto::ClientPendingGame); // 1
     msg->addU16(g_game.getOs());// 2
     msg->addU16(g_game.getProtocolVersion());// 2
 
-    //if (g_game.getFeature(Otc::GameClientVersion))
-    //    msg->addU32(g_game.getClientVersion());// 4
+    msg->addU8(1); // 1
 
-    //if (g_game.getClientVersion() >= 1281) {
-    //    msg->addString(std::to_string(g_game.getClientVersion()));// 4
-    //}
+    // msg->addU8(Proto::ClientPendingGame);
+    // msg->addU16(g_game.getOs());
+    // msg->addU16(g_game.getProtocolVersion());
 
-    //if (g_game.getFeature(Otc::GameContentRevision))
-    //    msg->addU16(g_things.getContentRevision());// 2
+    // if (g_game.getFeature(Otc::GameClientVersion))
+    //     msg->addU32(g_game.getClientVersion());
 
-    //if (g_game.getFeature(Otc::GamePreviewState))
-        msg->addU8(1); // 1
+    // if (g_game.getClientVersion() >= 1281) {
+    //     msg->addString(std::to_string(g_game.getClientVersion()));
+    // }
+
+    // if (g_game.getFeature(Otc::GameContentRevision))
+    //     msg->addU16(g_things.getContentRevision());
+
+    // if (g_game.getFeature(Otc::GamePreviewState))
+    //     msg->addU8(0);
 
     const int offset = msg->getMessageSize();
 
@@ -104,7 +111,7 @@ void ProtocolGame::sendLoginPacket(uint32_t challengeTimestamp, uint8_t challeng
         msg->addU8(challengeRandom);
     }
 
-    const auto extended = callLuaField<std::string>(XorStr("getLoginExtendedData"));
+    const auto& extended = callLuaField<std::string>("getLoginExtendedData");
     if (!extended.empty())
         msg->addString(extended);
 
@@ -128,14 +135,14 @@ void ProtocolGame::sendLoginPacket(uint32_t challengeTimestamp, uint8_t challeng
 
 void ProtocolGame::sendEnterGame()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientEnterGame);
     send(msg);
 }
 
 void ProtocolGame::sendLogout()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientLeaveGame);
     send(msg);
 }
@@ -145,7 +152,7 @@ void ProtocolGame::sendPing()
     if (g_game.getFeature(Otc::GameExtendedClientPing))
         sendExtendedOpcode(2, "");
     else {
-        const OutputMessagePtr msg(new OutputMessage);
+        const OutputMessagePtr& msg(new OutputMessage);
         msg->addU8(Proto::ClientPing);
         Protocol::send(msg);
     }
@@ -153,14 +160,14 @@ void ProtocolGame::sendPing()
 
 void ProtocolGame::sendPingBack()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientPingBack);
     send(msg);
 }
 
 void ProtocolGame::sendAutoWalk(const std::vector<Otc::Direction>& path)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientAutoWalk);
     msg->addU8(path.size());
     for (const Otc::Direction dir : path) {
@@ -201,98 +208,98 @@ void ProtocolGame::sendAutoWalk(const std::vector<Otc::Direction>& path)
 
 void ProtocolGame::sendWalkNorth()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkNorth);
     send(msg);
 }
 
 void ProtocolGame::sendWalkEast()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkEast);
     send(msg);
 }
 
 void ProtocolGame::sendWalkSouth()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkSouth);
     send(msg);
 }
 
 void ProtocolGame::sendWalkWest()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkWest);
     send(msg);
 }
 
 void ProtocolGame::sendStop()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientStop);
     send(msg);
 }
 
 void ProtocolGame::sendWalkNorthEast()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkNorthEast);
     send(msg);
 }
 
 void ProtocolGame::sendWalkSouthEast()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkSouthEast);
     send(msg);
 }
 
 void ProtocolGame::sendWalkSouthWest()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkSouthWest);
     send(msg);
 }
 
 void ProtocolGame::sendWalkNorthWest()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientWalkNorthWest);
     send(msg);
 }
 
 void ProtocolGame::sendTurnNorth()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientTurnNorth);
     send(msg);
 }
 
 void ProtocolGame::sendTurnEast()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientTurnEast);
     send(msg);
 }
 
 void ProtocolGame::sendTurnSouth()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientTurnSouth);
     send(msg);
 }
 
 void ProtocolGame::sendTurnWest()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientTurnWest);
     send(msg);
 }
 
 void ProtocolGame::sendEquipItem(int itemId, int countOrSubType)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientEquipItem);
     msg->addU16(itemId);
     msg->addU8(countOrSubType);
@@ -301,7 +308,7 @@ void ProtocolGame::sendEquipItem(int itemId, int countOrSubType)
 
 void ProtocolGame::sendMove(const Position& fromPos, int thingId, int stackpos, const Position& toPos, int count)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientMove);
     addPosition(msg, fromPos);
     msg->addU16(thingId);
@@ -313,7 +320,7 @@ void ProtocolGame::sendMove(const Position& fromPos, int thingId, int stackpos, 
 
 void ProtocolGame::sendInspectNpcTrade(int itemId, int count)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientInspectNpcTrade);
     msg->addU16(itemId);
     msg->addU8(count);
@@ -322,11 +329,14 @@ void ProtocolGame::sendInspectNpcTrade(int itemId, int count)
 
 void ProtocolGame::sendBuyItem(int itemId, int subType, int amount, bool ignoreCapacity, bool buyWithBackpack, int specialId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientBuyItem);
     msg->addU16(itemId);
     msg->addU8(subType);
-    msg->addU8(amount);
+    ///if (g_game.getFeature(Otc::GameDoubleShopSellAmount))
+    ///    msg->addU16(amount);
+    ///else
+        msg->addU8(amount);
     msg->addU8(ignoreCapacity ? 0x01 : 0x00);
     msg->addU8(buyWithBackpack ? 0x01 : 0x00);
     msg->addU16(specialId);
@@ -335,13 +345,13 @@ void ProtocolGame::sendBuyItem(int itemId, int subType, int amount, bool ignoreC
 
 void ProtocolGame::sendSellItem(int itemId, int subType, int amount, bool ignoreEquipped, int specialId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientSellItem);
     msg->addU16(itemId);
     msg->addU8(subType);
-    if (g_game.getFeature(Otc::GameDoubleShopSellAmount))
-        msg->addU16(amount);
-    else
+    ///if (g_game.getFeature(Otc::GameDoubleShopSellAmount))
+    ///    msg->addU16(amount);
+    ///else
         msg->addU8(amount);
     msg->addU8(ignoreEquipped ? 0x01 : 0x00);
     msg->addU16(specialId);
@@ -350,14 +360,14 @@ void ProtocolGame::sendSellItem(int itemId, int subType, int amount, bool ignore
 
 void ProtocolGame::sendCloseNpcTrade()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientCloseNpcTrade);
     send(msg);
 }
 
 void ProtocolGame::sendRequestTrade(const Position& pos, int thingId, int stackpos, uint32_t creatureId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestTrade);
     addPosition(msg, pos);
     msg->addU16(thingId);
@@ -368,7 +378,7 @@ void ProtocolGame::sendRequestTrade(const Position& pos, int thingId, int stackp
 
 void ProtocolGame::sendInspectTrade(bool counterOffer, int index)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientInspectTrade);
     msg->addU8(counterOffer ? 0x01 : 0x00);
     msg->addU8(index);
@@ -377,21 +387,21 @@ void ProtocolGame::sendInspectTrade(bool counterOffer, int index)
 
 void ProtocolGame::sendAcceptTrade()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientAcceptTrade);
     send(msg);
 }
 
 void ProtocolGame::sendRejectTrade()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRejectTrade);
     send(msg);
 }
 
 void ProtocolGame::sendUseItem(const Position& position, int itemId, int stackpos, int index)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientUseItem);
     addPosition(msg, position);
     msg->addU16(itemId);
@@ -402,7 +412,7 @@ void ProtocolGame::sendUseItem(const Position& position, int itemId, int stackpo
 
 void ProtocolGame::sendUseItemWith(const Position& fromPos, int itemId, int fromStackPos, const Position& toPos, int toThingId, int toStackPos)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientUseItemWith);
     addPosition(msg, fromPos);
     msg->addU16(itemId);
@@ -415,7 +425,7 @@ void ProtocolGame::sendUseItemWith(const Position& fromPos, int itemId, int from
 
 void ProtocolGame::sendUseOnCreature(const Position& pos, int thingId, int stackpos, uint32_t creatureId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientUseOnCreature);
     addPosition(msg, pos);
     msg->addU16(thingId);
@@ -426,7 +436,7 @@ void ProtocolGame::sendUseOnCreature(const Position& pos, int thingId, int stack
 
 void ProtocolGame::sendRotateItem(const Position& pos, int thingId, int stackpos)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRotateItem);
     addPosition(msg, pos);
     msg->addU16(thingId);
@@ -436,7 +446,7 @@ void ProtocolGame::sendRotateItem(const Position& pos, int thingId, int stackpos
 
 void ProtocolGame::sendCloseContainer(int containerId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientCloseContainer);
     msg->addU8(containerId);
     send(msg);
@@ -444,7 +454,7 @@ void ProtocolGame::sendCloseContainer(int containerId)
 
 void ProtocolGame::sendUpContainer(int containerId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientUpContainer);
     msg->addU8(containerId);
     send(msg);
@@ -452,7 +462,7 @@ void ProtocolGame::sendUpContainer(int containerId)
 
 void ProtocolGame::sendEditText(uint32_t id, const std::string_view text)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientEditText);
     msg->addU32(id);
     msg->addString(text);
@@ -461,7 +471,7 @@ void ProtocolGame::sendEditText(uint32_t id, const std::string_view text)
 
 void ProtocolGame::sendEditList(uint32_t id, int doorId, const std::string_view text)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientEditList);
     msg->addU8(doorId);
     msg->addU32(id);
@@ -471,7 +481,7 @@ void ProtocolGame::sendEditList(uint32_t id, int doorId, const std::string_view 
 
 void ProtocolGame::sendLook(const Position& position, int thingId, int stackpos)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientLook);
     addPosition(msg, position);
     msg->addU16(thingId);
@@ -481,7 +491,7 @@ void ProtocolGame::sendLook(const Position& position, int thingId, int stackpos)
 
 void ProtocolGame::sendLookCreature(uint32_t creatureId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientLookCreature);
     msg->addU32(creatureId);
     send(msg);
@@ -497,7 +507,7 @@ void ProtocolGame::sendTalk(Otc::MessageMode mode, int channelId, const std::str
         return;
     }
 
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientTalk);
     msg->addU8(Proto::translateMessageModeToServer(mode));
 
@@ -523,14 +533,14 @@ void ProtocolGame::sendTalk(Otc::MessageMode mode, int channelId, const std::str
 
 void ProtocolGame::sendRequestChannels()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestChannels);
     send(msg);
 }
 
 void ProtocolGame::sendJoinChannel(int channelId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientJoinChannel);
     msg->addU16(channelId);
     send(msg);
@@ -538,7 +548,7 @@ void ProtocolGame::sendJoinChannel(int channelId)
 
 void ProtocolGame::sendLeaveChannel(int channelId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientLeaveChannel);
     msg->addU16(channelId);
     send(msg);
@@ -546,7 +556,7 @@ void ProtocolGame::sendLeaveChannel(int channelId)
 
 void ProtocolGame::sendOpenPrivateChannel(const std::string_view receiver)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientOpenPrivateChannel);
     msg->addString(receiver);
     send(msg);
@@ -554,7 +564,7 @@ void ProtocolGame::sendOpenPrivateChannel(const std::string_view receiver)
 
 void ProtocolGame::sendOpenRuleViolation(const std::string_view reporter)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientOpenRuleViolation);
     msg->addString(reporter);
     send(msg);
@@ -562,7 +572,7 @@ void ProtocolGame::sendOpenRuleViolation(const std::string_view reporter)
 
 void ProtocolGame::sendCloseRuleViolation(const std::string_view reporter)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientCloseRuleViolation);
     msg->addString(reporter);
     send(msg);
@@ -570,21 +580,21 @@ void ProtocolGame::sendCloseRuleViolation(const std::string_view reporter)
 
 void ProtocolGame::sendCancelRuleViolation()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientCancelRuleViolation);
     send(msg);
 }
 
 void ProtocolGame::sendCloseNpcChannel()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientCloseNpcChannel);
     send(msg);
 }
 
 void ProtocolGame::sendChangeFightModes(Otc::FightModes fightMode, Otc::ChaseModes chaseMode, bool safeFight, Otc::PVPModes pvpMode)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientChangeFightModes);
     msg->addU8(fightMode);
     msg->addU8(chaseMode);
@@ -596,7 +606,7 @@ void ProtocolGame::sendChangeFightModes(Otc::FightModes fightMode, Otc::ChaseMod
 
 void ProtocolGame::sendAttack(uint32_t creatureId, uint32_t seq)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientAttack);
     msg->addU32(creatureId);
     if (g_game.getFeature(Otc::GameAttackSeq))
@@ -606,7 +616,7 @@ void ProtocolGame::sendAttack(uint32_t creatureId, uint32_t seq)
 
 void ProtocolGame::sendFollow(uint32_t creatureId, uint32_t seq)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientFollow);
     msg->addU32(creatureId);
     if (g_game.getFeature(Otc::GameAttackSeq))
@@ -616,7 +626,7 @@ void ProtocolGame::sendFollow(uint32_t creatureId, uint32_t seq)
 
 void ProtocolGame::sendInviteToParty(uint32_t creatureId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientInviteToParty);
     msg->addU32(creatureId);
     send(msg);
@@ -624,7 +634,7 @@ void ProtocolGame::sendInviteToParty(uint32_t creatureId)
 
 void ProtocolGame::sendJoinParty(uint32_t creatureId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientJoinParty);
     msg->addU32(creatureId);
     send(msg);
@@ -632,7 +642,7 @@ void ProtocolGame::sendJoinParty(uint32_t creatureId)
 
 void ProtocolGame::sendRevokeInvitation(uint32_t creatureId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRevokeInvitation);
     msg->addU32(creatureId);
     send(msg);
@@ -640,7 +650,7 @@ void ProtocolGame::sendRevokeInvitation(uint32_t creatureId)
 
 void ProtocolGame::sendPassLeadership(uint32_t creatureId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientPassLeadership);
     msg->addU32(creatureId);
     send(msg);
@@ -648,14 +658,14 @@ void ProtocolGame::sendPassLeadership(uint32_t creatureId)
 
 void ProtocolGame::sendLeaveParty()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientLeaveParty);
     send(msg);
 }
 
 void ProtocolGame::sendShareExperience(bool active)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientShareExperience);
     msg->addU8(active ? 0x01 : 0x00);
     if (g_game.getClientVersion() < 910)
@@ -665,14 +675,14 @@ void ProtocolGame::sendShareExperience(bool active)
 
 void ProtocolGame::sendOpenOwnChannel()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientOpenOwnChannel);
     send(msg);
 }
 
 void ProtocolGame::sendInviteToOwnChannel(const std::string_view name)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientInviteToOwnChannel);
     msg->addString(name);
     send(msg);
@@ -680,7 +690,7 @@ void ProtocolGame::sendInviteToOwnChannel(const std::string_view name)
 
 void ProtocolGame::sendExcludeFromOwnChannel(const std::string_view name)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientExcludeFromOwnChannel);
     msg->addString(name);
     send(msg);
@@ -688,14 +698,14 @@ void ProtocolGame::sendExcludeFromOwnChannel(const std::string_view name)
 
 void ProtocolGame::sendCancelAttackAndFollow()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientCancelAttackAndFollow);
     send(msg);
 }
 
 void ProtocolGame::sendRefreshContainer(int containerId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRefreshContainer);
     msg->addU8(containerId);
     send(msg);
@@ -703,14 +713,14 @@ void ProtocolGame::sendRefreshContainer(int containerId)
 
 void ProtocolGame::sendRequestOutfit()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestOutfit);
     send(msg);
 }
 
 void ProtocolGame::sendChangeOutfit(const Outfit& outfit)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientChangeOutfit);
 
     if (g_game.getClientVersion() >= 1281) {
@@ -750,7 +760,7 @@ void ProtocolGame::sendChangeOutfit(const Outfit& outfit)
 void ProtocolGame::sendMountStatus(bool mount)
 {
     if (g_game.getFeature(Otc::GamePlayerMounts)) {
-        const OutputMessagePtr msg(new OutputMessage);
+        const OutputMessagePtr& msg(new OutputMessage);
         msg->addU8(Proto::ClientMount);
         msg->addU8(mount);
         send(msg);
@@ -761,7 +771,7 @@ void ProtocolGame::sendMountStatus(bool mount)
 
 void ProtocolGame::sendAddVip(const std::string_view name)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientAddVip);
     msg->addString(name);
     send(msg);
@@ -769,7 +779,7 @@ void ProtocolGame::sendAddVip(const std::string_view name)
 
 void ProtocolGame::sendRemoveVip(uint32_t playerId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRemoveVip);
     msg->addU32(playerId);
     send(msg);
@@ -777,7 +787,7 @@ void ProtocolGame::sendRemoveVip(uint32_t playerId)
 
 void ProtocolGame::sendEditVip(uint32_t playerId, const std::string_view description, int iconId, bool notifyLogin)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientEditVip);
     msg->addU32(playerId);
     msg->addString(description);
@@ -788,7 +798,7 @@ void ProtocolGame::sendEditVip(uint32_t playerId, const std::string_view descrip
 
 void ProtocolGame::sendBugReport(const std::string_view comment)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientBugReport);
     if (g_game.getProtocolVersion() > 1000) {
         msg->addU8(3); // category
@@ -799,7 +809,7 @@ void ProtocolGame::sendBugReport(const std::string_view comment)
 
 void ProtocolGame::sendRuleViolation(const std::string_view target, int reason, int action, const std::string_view comment, const std::string_view statement, int statementId, bool ipBanishment)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRuleViolation);
     msg->addString(target);
     msg->addU8(reason);
@@ -813,7 +823,7 @@ void ProtocolGame::sendRuleViolation(const std::string_view target, int reason, 
 
 void ProtocolGame::sendDebugReport(const std::string_view a, const std::string_view b, const std::string_view c, const std::string_view d)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientDebugReport);
     msg->addString(a);
     msg->addString(b);
@@ -824,14 +834,14 @@ void ProtocolGame::sendDebugReport(const std::string_view a, const std::string_v
 
 void ProtocolGame::sendRequestQuestLog()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestQuestLog);
     send(msg);
 }
 
 void ProtocolGame::sendRequestQuestLine(int questId)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestQuestLine);
     msg->addU16(questId);
     send(msg);
@@ -839,7 +849,7 @@ void ProtocolGame::sendRequestQuestLine(int questId)
 
 void ProtocolGame::sendNewNewRuleViolation(int reason, int action, const std::string_view characterName, const std::string_view comment, const std::string_view translation)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientNewRuleViolation);
     msg->addU8(reason);
     msg->addU8(action);
@@ -851,7 +861,7 @@ void ProtocolGame::sendNewNewRuleViolation(int reason, int action, const std::st
 
 void ProtocolGame::sendRequestItemInfo(int itemId, int subType, int index)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestItemInfo);
     msg->addU8(subType);
     msg->addU16(itemId);
@@ -861,7 +871,7 @@ void ProtocolGame::sendRequestItemInfo(int itemId, int subType, int index)
 
 void ProtocolGame::sendAnswerModalDialog(uint32_t dialog, int button, int choice)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientAnswerModalDialog);
     msg->addU32(dialog);
     msg->addU8(button);
@@ -874,7 +884,7 @@ void ProtocolGame::sendBrowseField(const Position& position)
     if (!g_game.getFeature(Otc::GameBrowseField))
         return;
 
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientBrowseField);
     addPosition(msg, position);
     send(msg);
@@ -885,7 +895,7 @@ void ProtocolGame::sendSeekInContainer(int cid, int index)
     if (!g_game.getFeature(Otc::GameContainerPagination))
         return;
 
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientSeekInContainer);
     msg->addU8(cid);
     msg->addU16(index);
@@ -894,7 +904,7 @@ void ProtocolGame::sendSeekInContainer(int cid, int index)
 
 void ProtocolGame::sendBuyStoreOffer(int offerId, int productType, const std::string_view name)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientBuyStoreOffer);
     msg->addU32(offerId);
     msg->addU8(productType);
@@ -907,7 +917,7 @@ void ProtocolGame::sendBuyStoreOffer(int offerId, int productType, const std::st
 
 void ProtocolGame::sendRequestTransactionHistory(int page, int entriesPerPage)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestTransactionHistory);
     if (g_game.getClientVersion() <= 1096) {
         msg->addU16(page);
@@ -922,7 +932,7 @@ void ProtocolGame::sendRequestTransactionHistory(int page, int entriesPerPage)
 
 void ProtocolGame::sendRequestStoreOffers(const std::string_view categoryName, int serviceType)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientRequestStoreOffers);
 
     if (g_game.getFeature(Otc::GameIngameStoreServiceType)) {
@@ -935,7 +945,7 @@ void ProtocolGame::sendRequestStoreOffers(const std::string_view categoryName, i
 
 void ProtocolGame::sendOpenStore(int serviceType, const std::string_view category)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientOpenStore);
 
     if (g_game.getFeature(Otc::GameIngameStoreServiceType)) {
@@ -948,7 +958,7 @@ void ProtocolGame::sendOpenStore(int serviceType, const std::string_view categor
 
 void ProtocolGame::sendTransferCoins(const std::string_view recipient, int amount)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientTransferCoins);
     msg->addString(recipient);
     msg->addU16(amount);
@@ -957,7 +967,7 @@ void ProtocolGame::sendTransferCoins(const std::string_view recipient, int amoun
 
 void ProtocolGame::sendOpenTransactionHistory(int entriesPerPage)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientOpenTransactionHistory);
     msg->addU8(entriesPerPage);
 
@@ -969,7 +979,7 @@ void ProtocolGame::sendChangeMapAwareRange(int xrange, int yrange)
     if (!g_game.getFeature(Otc::GameChangeMapAwareRange))
         return;
 
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientChangeMapAwareRange);
     msg->addU8(xrange);
     msg->addU8(yrange);
@@ -985,14 +995,14 @@ void ProtocolGame::addPosition(const OutputMessagePtr& msg, const Position& posi
 
 void ProtocolGame::sendMarketLeave()
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientMarketLeave);
     send(msg);
 }
 
 void ProtocolGame::sendMarketBrowse(uint8_t browseId, uint16_t browseType)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientMarketBrowse);
     if (g_game.getClientVersion() >= 1251) {
         msg->addU8(browseId);
@@ -1007,13 +1017,14 @@ void ProtocolGame::sendMarketBrowse(uint8_t browseId, uint16_t browseType)
 
 void ProtocolGame::sendMarketCreateOffer(uint8_t type, uint16_t itemId, uint8_t itemTier, uint16_t amount, uint64_t price, uint8_t anonymous)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientMarketCreate);
     msg->addU8(type);
     msg->addU16(itemId);
-    ItemPtr item = Item::create(itemId);
-    if (item && item->getClassification() > 0) {
-        msg->addU8(itemTier);
+    if (const auto& item = Item::create(itemId)) {
+        if (item->getClassification() > 0) {
+            msg->addU8(itemTier);
+        }
     }
     msg->addU16(amount);
     msg->addU64(price);
@@ -1023,7 +1034,7 @@ void ProtocolGame::sendMarketCreateOffer(uint8_t type, uint16_t itemId, uint8_t 
 
 void ProtocolGame::sendMarketCancelOffer(uint32_t timestamp, uint16_t counter)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientMarketCancel);
     msg->addU32(timestamp);
     msg->addU16(counter);
@@ -1032,7 +1043,7 @@ void ProtocolGame::sendMarketCancelOffer(uint32_t timestamp, uint16_t counter)
 
 void ProtocolGame::sendMarketAcceptOffer(uint32_t timestamp, uint16_t counter, uint16_t amount)
 {
-    const OutputMessagePtr msg(new OutputMessage);
+    const OutputMessagePtr& msg(new OutputMessage);
     msg->addU8(Proto::ClientMarketAccept);
     msg->addU32(timestamp);
     msg->addU16(counter);

@@ -43,7 +43,6 @@ public:
 
     int getFps() { return m_frameCounter.getFps(); }
     int getMaxFps() { return m_frameCounter.getMaxFps(); }
-
     bool isPacked()
     {
 #if ENCRYPTION_PACKED == 1
@@ -69,11 +68,10 @@ protected:
     void inputEvent(const InputEvent& event);
 
 private:
-    bool m_onInputEvent{ false },
-        m_optimize{ true },
-        m_forceEffectOptimization{ false },
-        m_drawEffectOnTop{ false },
-        m_repaint{ true };
+    bool m_onInputEvent{ false };
+    bool m_optimize{ true };
+    bool m_forceEffectOptimization{ false };
+    bool m_drawEffectOnTop{ false };
 
     Timer m_foregroundRefreshTime;
 

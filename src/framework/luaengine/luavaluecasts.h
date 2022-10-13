@@ -92,6 +92,17 @@ inline bool luavalue_cast(int index, int64_t& v)
     double d;
     const bool r = luavalue_cast(index, d); v = d; return r;
 }
+
+#ifdef __APPLE__
+// ulong
+inline int push_luavalue(ulong v) { push_luavalue(static_cast<double>(v)); return 1; }
+inline bool luavalue_cast(int index, ulong& v)
+{
+    double d;
+    const bool r = luavalue_cast(index, d); v = d; return r;
+}
+#endif
+
 // uint64
 inline int push_luavalue(uint64_t v) { push_luavalue(static_cast<double>(v)); return 1; }
 inline bool luavalue_cast(int index, uint64_t& v)
@@ -101,6 +112,7 @@ inline bool luavalue_cast(int index, uint64_t& v)
 }
 
 // string
+int push_luavalue(const char* cstr);
 int push_luavalue(const std::string_view str);
 bool luavalue_cast(int index, std::string& str);
 
@@ -209,8 +221,7 @@ template<class T>
 std::enable_if_t<std::is_enum_v<T>, bool>
 luavalue_cast(int index, T& myenum)
 {
-    int i;
-    if (luavalue_cast(index, i)) {
+    if (int i; luavalue_cast(index, i)) {
         myenum = static_cast<T>(i);
         return true;
     }
@@ -235,10 +246,8 @@ luavalue_cast(int index, stdext::shared_object_ptr<T>& ptr)
     LuaObjectPtr obj;
     if (!luavalue_cast(index, obj))
         return false;
-    if (obj)
-        ptr = obj->dynamic_self_cast<T>();
-    else
-        ptr = nullptr;
+
+    ptr = obj ? obj->dynamic_self_cast<T>() : nullptr;
     return true;
 }
 
@@ -274,7 +283,7 @@ bool luavalue_cast(int index, std::function<void(Args...)>& func)
                     throw LuaException("attempt to call an expired lua function from C++,"
                                        "did you forget to hold a reference for that function?", 0);
                 }
-            } catch (LuaException& e) {
+            } catch (const LuaException& e) {
                 g_logger.error(stdext::format("lua function callback failed: %s", e.what()));
             }
         };
@@ -302,14 +311,13 @@ luavalue_cast(int index, std::function<Ret(Args...)>& func)
             try {
                 g_lua.getWeakRef(funcWeakRef);
                 if (g_lua.isFunction()) {
-                    const int numArgs = g_lua.polymorphicPush(args...);
-                    if (g_lua.safeCall(numArgs) != 1)
+                    if (const int numArgs = g_lua.polymorphicPush(args...); g_lua.safeCall(numArgs) != 1)
                         throw LuaException("a function from lua didn't retrieve the expected number of results", 0);
                     return g_lua.polymorphicPop<Ret>();
                 }
                 throw LuaException("attempt to call an expired lua function from C++,"
                                    "did you forget to hold a reference for that function?", 0);
-            } catch (LuaException& e) {
+            } catch (const LuaException& e) {
                 g_logger.error(stdext::format("lua function callback failed: %s", e.what()));
             }
             return Ret();
@@ -414,9 +422,9 @@ template<class K, class V>
 int push_luavalue(const std::map<K, V>& map)
 {
     g_lua.newTable();
-    for (auto& it : map) {
-        push_internal_luavalue(it.first);
-        push_internal_luavalue(it.second);
+    for (const auto& [key, value] : map) {
+        push_internal_luavalue(key);
+        push_internal_luavalue(value);
         g_lua.rawSet();
     }
     return 1;

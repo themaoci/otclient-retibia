@@ -31,9 +31,6 @@
 #include <framework/otml/otmlnode.h>
 #include <framework/platform/platformwindow.h>
 
-#include <ranges>
-#include <numbers>
-
 #include "framework/graphics/drawpoolmanager.h"
 
 UIWidget::UIWidget()
@@ -64,7 +61,7 @@ void UIWidget::draw(const Rect& visibleRect, Fw::DrawPane drawPane)
 
     if (m_rotation != 0.0f) {
         g_painter->pushTransformMatrix();
-        g_painter->rotate(m_rect.center(), m_rotation * (std::numbers::pi / 180.0));
+        g_painter->rotate(m_rect.center(), m_rotation * (Fw::pi / 180.0));
     }
 
     drawSelf(drawPane);
@@ -329,7 +326,6 @@ void UIWidget::focusNextChild(Fw::FocusReason reason, bool rotate)
         return;
 
     UIWidgetPtr toFocus;
-
     if (rotate) {
         UIWidgetList rotatedChildren(m_children);
 
@@ -342,7 +338,7 @@ void UIWidget::focusNextChild(Fw::FocusReason reason, bool rotate)
         }
 
         // finds next child to focus
-        for (const UIWidgetPtr& child : rotatedChildren) {
+        for (const auto& child : rotatedChildren) {
             if (child->isFocusable() && child->isExplicitlyEnabled() && child->isVisible()) {
                 toFocus = child;
                 break;
@@ -354,7 +350,7 @@ void UIWidget::focusNextChild(Fw::FocusReason reason, bool rotate)
             it = std::find(m_children.begin(), m_children.end(), m_focusedChild);
 
         for (; it != m_children.end(); ++it) {
-            const UIWidgetPtr& child = *it;
+            const auto& child = *it;
             if (child != m_focusedChild && child->isFocusable() && child->isExplicitlyEnabled() && child->isVisible()) {
                 toFocus = child;
                 break;
@@ -385,7 +381,7 @@ void UIWidget::focusPreviousChild(Fw::FocusReason reason, bool rotate)
         }
 
         // finds next child to focus
-        for (const UIWidgetPtr& child : rotatedChildren) {
+        for (const auto& child : rotatedChildren) {
             if (child->isFocusable() && child->isExplicitlyEnabled() && child->isVisible()) {
                 toFocus = child;
                 break;
@@ -615,10 +611,10 @@ void UIWidget::applyStyle(const OTMLNodePtr& styleNode)
         callLuaField("onStyleApply", styleNode->tag(), styleNode);
 
         if (m_firstOnStyle) {
-            const UIWidgetPtr parent = getParent();
+            const auto& parent = getParent();
             if (isFocusable() && isExplicitlyVisible() && isExplicitlyEnabled() &&
-               parent && ((!parent->getFocusedChild() && parent->getAutoFocusPolicy() == Fw::AutoFocusFirst) ||
-                          parent->getAutoFocusPolicy() == Fw::AutoFocusLast)) {
+                parent && ((!parent->getFocusedChild() && parent->getAutoFocusPolicy() == Fw::AutoFocusFirst) ||
+                           parent->getAutoFocusPolicy() == Fw::AutoFocusLast)) {
                 focus();
             }
         }
@@ -635,7 +631,7 @@ void UIWidget::addAnchor(Fw::AnchorEdge anchoredEdge, const std::string_view hoo
     if (m_destroyed)
         return;
 
-    if (const UIAnchorLayoutPtr anchorLayout = getAnchoredLayout())
+    if (const auto& anchorLayout = getAnchoredLayout())
         anchorLayout->addAnchor(static_self_cast<UIWidget>(), anchoredEdge, hookedWidgetId, hookedEdge);
     else
         g_logger.traceError(stdext::format("cannot add anchors to widget '%s': the parent doesn't use anchors layout", m_id));
@@ -651,7 +647,7 @@ void UIWidget::centerIn(const std::string_view hookedWidgetId)
     if (m_destroyed)
         return;
 
-    if (const UIAnchorLayoutPtr anchorLayout = getAnchoredLayout()) {
+    if (const auto& anchorLayout = getAnchoredLayout()) {
         anchorLayout->addAnchor(static_self_cast<UIWidget>(), Fw::AnchorHorizontalCenter, hookedWidgetId, Fw::AnchorHorizontalCenter);
         anchorLayout->addAnchor(static_self_cast<UIWidget>(), Fw::AnchorVerticalCenter, hookedWidgetId, Fw::AnchorVerticalCenter);
     } else
@@ -663,7 +659,7 @@ void UIWidget::fill(const std::string_view hookedWidgetId)
     if (m_destroyed)
         return;
 
-    if (const UIAnchorLayoutPtr anchorLayout = getAnchoredLayout()) {
+    if (const auto& anchorLayout = getAnchoredLayout()) {
         anchorLayout->addAnchor(static_self_cast<UIWidget>(), Fw::AnchorLeft, hookedWidgetId, Fw::AnchorLeft);
         anchorLayout->addAnchor(static_self_cast<UIWidget>(), Fw::AnchorRight, hookedWidgetId, Fw::AnchorRight);
         anchorLayout->addAnchor(static_self_cast<UIWidget>(), Fw::AnchorTop, hookedWidgetId, Fw::AnchorTop);
@@ -677,7 +673,7 @@ void UIWidget::breakAnchors()
     if (m_destroyed)
         return;
 
-    if (const UIAnchorLayoutPtr anchorLayout = getAnchoredLayout())
+    if (const auto& anchorLayout = getAnchoredLayout())
         anchorLayout->removeAnchors(static_self_cast<UIWidget>());
 }
 
@@ -686,7 +682,7 @@ void UIWidget::updateParentLayout()
     if (m_destroyed)
         return;
 
-    if (const UIWidgetPtr parent = getParent())
+    if (const auto& parent = getParent())
         parent->updateLayout();
     else
         updateLayout();
@@ -701,9 +697,10 @@ void UIWidget::updateLayout()
         m_layout->update();
 
     // children can affect the parent layout
-    if (const UIWidgetPtr parent = getParent())
-        if (const UILayoutPtr parentLayout = parent->getLayout())
+    if (const auto& parent = getParent()) {
+        if (const auto& parentLayout = parent->getLayout())
             parentLayout->updateLater();
+    }
 }
 
 void UIWidget::lock()
@@ -711,7 +708,7 @@ void UIWidget::lock()
     if (m_destroyed)
         return;
 
-    if (const UIWidgetPtr parent = getParent())
+    if (const auto& parent = getParent())
         parent->lockChild(static_self_cast<UIWidget>());
 }
 
@@ -720,7 +717,7 @@ void UIWidget::unlock()
     if (m_destroyed)
         return;
 
-    if (const UIWidgetPtr parent = getParent())
+    if (const auto& parent = getParent())
         parent->unlockChild(static_self_cast<UIWidget>());
 }
 
@@ -732,7 +729,7 @@ void UIWidget::focus()
     if (!m_focusable)
         return;
 
-    if (const UIWidgetPtr parent = getParent())
+    if (const auto& parent = getParent())
         parent->focusChild(static_self_cast<UIWidget>(), Fw::ActiveFocusReason);
 }
 
@@ -741,7 +738,7 @@ void UIWidget::recursiveFocus(Fw::FocusReason reason)
     if (m_destroyed)
         return;
 
-    if (const UIWidgetPtr parent = getParent()) {
+    if (const auto& parent = getParent()) {
         if (m_focusable)
             parent->focusChild(static_self_cast<UIWidget>(), reason);
         parent->recursiveFocus(reason);
@@ -753,7 +750,7 @@ void UIWidget::lower()
     if (m_destroyed)
         return;
 
-    const UIWidgetPtr parent = getParent();
+    const auto& parent = getParent();
     if (parent)
         parent->lowerChild(static_self_cast<UIWidget>());
 }
@@ -763,7 +760,7 @@ void UIWidget::raise()
     if (m_destroyed)
         return;
 
-    const UIWidgetPtr parent = getParent();
+    const auto& parent = getParent();
     if (parent)
         parent->raiseChild(static_self_cast<UIWidget>());
 }
@@ -802,9 +799,9 @@ void UIWidget::bindRectToParent()
         return;
 
     Rect boundRect = m_rect;
-    const UIWidgetPtr parent = getParent();
+    const auto& parent = getParent();
     if (parent) {
-        const Rect parentRect = parent->getPaddingRect();
+        const auto& parentRect = parent->getPaddingRect();
         boundRect.bind(parentRect);
     }
 
@@ -846,14 +843,15 @@ void UIWidget::destroy()
     m_destroyed = true;
 
     // remove itself from parent
-    if (const UIWidgetPtr parent = getParent())
+    if (const auto& parent = getParent())
         parent->removeChild(self);
+
     internalDestroy();
 }
 
 void UIWidget::destroyChildren()
 {
-    const UILayoutPtr layout = getLayout();
+    const auto& layout = getLayout();
     if (layout)
         layout->disableUpdates();
 
@@ -905,7 +903,7 @@ void UIWidget::setId(const std::string_view id)
 void UIWidget::setParent(const UIWidgetPtr& parent)
 {
     // remove from old parent
-    const UIWidgetPtr oldParent = getParent();
+    const auto& oldParent = getParent();
 
     // the parent is already the same
     if (oldParent == parent)
@@ -1031,7 +1029,7 @@ void UIWidget::setVisible(bool visible)
 
     // hiding a widget make it lose focus
     if (!visible && isFocused()) {
-        if (const UIWidgetPtr parent = getParent())
+        if (const auto& parent = getParent())
             parent->focusPreviousChild(Fw::ActiveFocusReason, true);
     }
 
@@ -1067,7 +1065,7 @@ void UIWidget::setFocusable(bool focusable)
     m_focusable = focusable;
 
     // make parent focus another child
-    if (const UIWidgetPtr parent = getParent()) {
+    if (const auto& parent = getParent()) {
         if (!focusable && isFocused()) {
             parent->focusPreviousChild(Fw::ActiveFocusReason, true);
         } else if (focusable && !parent->getFocusedChild() && parent->getAutoFocusPolicy() != Fw::AutoFocusNone) {
@@ -1111,9 +1109,10 @@ void UIWidget::setVirtualOffset(const Point& offset)
 
 bool UIWidget::isAnchored()
 {
-    if (const UIWidgetPtr parent = getParent())
-        if (const UIAnchorLayoutPtr anchorLayout = parent->getAnchoredLayout())
+    if (const auto& parent = getParent()) {
+        if (const auto& anchorLayout = parent->getAnchoredLayout())
             return anchorLayout->hasAnchors(static_self_cast<UIWidget>());
+    }
 
     return false;
 }
@@ -1175,11 +1174,11 @@ Rect UIWidget::getChildrenRect()
 
 UIAnchorLayoutPtr UIWidget::getAnchoredLayout()
 {
-    const UIWidgetPtr parent = getParent();
+    const auto& parent = getParent();
     if (!parent)
         return nullptr;
 
-    const UILayoutPtr layout = parent->getLayout();
+    const auto& layout = parent->getLayout();
     if (layout->isUIAnchorLayout())
         return layout->static_self_cast<UIAnchorLayout>();
 
@@ -1188,7 +1187,7 @@ UIAnchorLayoutPtr UIWidget::getAnchoredLayout()
 
 UIWidgetPtr UIWidget::getRootParent()
 {
-    if (const UIWidgetPtr parent = getParent())
+    if (const auto& parent = getParent())
         return parent->getRootParent();
 
     return static_self_cast<UIWidget>();
@@ -1218,7 +1217,8 @@ UIWidgetPtr UIWidget::getChildByPos(const Point& childPos)
     if (!containsPaddingPoint(childPos))
         return nullptr;
 
-    for (const auto& child : m_children | std::views::reverse) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+        const auto& child = (*it);
         if (child->isExplicitlyVisible() && child->containsPoint(childPos))
             return child;
     }
@@ -1254,7 +1254,9 @@ UIWidgetPtr UIWidget::recursiveGetChildByPos(const Point& childPos, bool wantsPh
     if (!containsPaddingPoint(childPos))
         return nullptr;
 
-    for (const auto& child : m_children | std::views::reverse) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+        const auto& child = (*it);
+
         if (child->isExplicitlyVisible() && child->containsPoint(childPos)) {
             if (const UIWidgetPtr& subChild = child->recursiveGetChildByPos(childPos, wantsPhantom))
                 return subChild;
@@ -1285,7 +1287,9 @@ UIWidgetList UIWidget::recursiveGetChildrenByPos(const Point& childPos)
         return {};
 
     UIWidgetList children;
-    for (const auto& child : m_children | std::views::reverse) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+        const auto& child = (*it);
+
         if (child->isExplicitlyVisible() && child->containsPoint(childPos)) {
             if (const UIWidgetList& subChildren = child->recursiveGetChildrenByPos(childPos); !subChildren.empty())
                 children.insert(children.end(), subChildren.begin(), subChildren.end());
@@ -1303,7 +1307,8 @@ UIWidgetList UIWidget::recursiveGetChildrenByMarginPos(const Point& childPos)
     if (!containsPaddingPoint(childPos))
         return children;
 
-    for (const auto& child : m_children | std::views::reverse) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+        const auto& child = (*it);
         if (child->isExplicitlyVisible() && child->containsMarginPoint(childPos)) {
             UIWidgetList subChildren = child->recursiveGetChildrenByMarginPos(childPos);
             if (!subChildren.empty())
@@ -1318,9 +1323,10 @@ UIWidgetPtr UIWidget::backwardsGetWidgetById(const std::string_view id)
 {
     UIWidgetPtr widget = getChildById(id);
     if (!widget) {
-        if (const UIWidgetPtr parent = getParent())
+        if (const auto& parent = getParent())
             widget = parent->backwardsGetWidgetById(id);
     }
+
     return widget;
 }
 
@@ -1375,7 +1381,7 @@ void UIWidget::updateState(Fw::WidgetState state)
             do {
                 parent = widget->getParent();
                 if (!widget->isExplicitlyEnabled() ||
-                   ((parent && parent->getFocusedChild() != widget))) {
+                    ((parent && parent->getFocusedChild() != widget))) {
                     newStatus = false;
                     break;
                 }
@@ -1474,18 +1480,18 @@ void UIWidget::updateStyle()
     if (!m_style)
         return;
 
-    const OTMLNodePtr newStateStyle = OTMLNode::create();
+    const auto& newStateStyle = OTMLNode::create();
 
     // copy only the changed styles from default style
     if (m_stateStyle) {
-        for (const OTMLNodePtr& node : m_stateStyle->children()) {
-            if (const OTMLNodePtr otherNode = m_style->get(node->tag()))
+        for (const auto& node : m_stateStyle->children()) {
+            if (const auto& otherNode = m_style->get(node->tag()))
                 newStateStyle->addChild(otherNode->clone());
         }
     }
 
     // checks for states combination
-    for (const OTMLNodePtr& style : m_style->children()) {
+    for (const auto& style : m_style->children()) {
         if (style->tag().starts_with("$")) {
             std::string statesStr = style->tag().substr(1);
             std::vector<std::string> statesSplit = stdext::split(statesStr, " ");
@@ -1750,7 +1756,9 @@ bool UIWidget::propagateOnMouseEvent(const Point& mousePos, UIWidgetList& widget
 {
     bool ret = false;
     if (containsPaddingPoint(mousePos)) {
-        for (const auto& child : m_children | std::views::reverse) {
+        for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+            const auto& child = *it;
+
             if (child->isExplicitlyEnabled() && child->isExplicitlyVisible() && child->containsPoint(mousePos)) {
                 if (child->propagateOnMouseEvent(mousePos, widgetList)) {
                     ret = true;

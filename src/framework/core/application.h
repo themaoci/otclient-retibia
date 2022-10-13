@@ -43,7 +43,6 @@ public:
     void setCompactName(const std::string_view name) { m_appCompactName = name; }
     void setOrganizationName(const std::string_view name) { m_organizationName = name; }
 
-
     bool isRunning() { return m_running; }
     bool isStopping() { return m_stopping; }
     bool isTerminated() { return m_terminated; }
@@ -66,19 +65,19 @@ public:
     std::string getStartupOptions() { return m_startupOptions; }
     uintmax_t FILE_SIZE = 0, MODULE_SIZE = 0;
     int MODULE_FILE_COUNT = 0;
-
+    
 protected:
     void registerLuaFunctions();
 
-    std::string m_charset{ "cp1252" },
-        m_organizationName{ "org" },
-        m_appName{ "application" },
-        m_appCompactName{ "app" },
-        m_startupOptions;
+    std::string m_charset{ "cp1252" };
+    std::string m_organizationName{ "org" };
+    std::string m_appName{ "application" };
+    std::string m_appCompactName{ "app" };
+    std::string m_startupOptions;
 
-    bool m_running{ false },
-        m_stopping{ false },
-        m_terminated{ false };
+    bool m_running{ false };
+    bool m_stopping{ false };
+    bool m_terminated{ false };
 };
 
 #include "graphicalapplication.h"

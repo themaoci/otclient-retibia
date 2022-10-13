@@ -112,7 +112,7 @@ protected:
     struct DrawObject
     {
         DrawObject(std::function<void()> action) : action(std::move(action)) {}
-        DrawObject(const PoolState& state, const DrawBufferPtr& buffer) : state(state), buffer(buffer) {}
+        DrawObject(const PoolState& state, const DrawBufferPtr& buffer) : buffer(buffer), state(state) {}
         DrawObject(const DrawMode drawMode, const PoolState& state, const DrawMethod& method) :
             drawMode(drawMode), state(state), method(method)
         {}
@@ -191,11 +191,12 @@ private:
 
     bool canRepaint(bool autoUpdateStatus);
 
-    bool m_enabled{ true },
-        m_alwaysGroupDrawings{ false },
-        m_autoUpdate{ false };
+    bool m_enabled{ true };
+    bool m_alwaysGroupDrawings{ false };
+    bool m_autoUpdate{ false };
 
-    uint8_t m_currentOrder{ 0 }, m_currentFloor{ 0 };
+    uint8_t m_currentOrder{ 0 };
+    uint8_t m_currentFloor{ 0 };
 
     uint16_t m_refreshTimeMS{ 0 };
 
@@ -234,7 +235,8 @@ private:
 
     FrameBufferPtr m_framebuffer;
 
-    std::function<void()> m_beforeDraw, m_afterDraw;
+    std::function<void()> m_beforeDraw;
+    std::function<void()> m_afterDraw;
 };
 
 extern DrawPoolManager g_drawPool;
@@ -245,7 +247,9 @@ public:
     DrawBuffer(DrawPool::DrawOrder order, bool agroup = true, bool isStatic = true) : m_agroup(agroup), m_order(order), m_static(isStatic) {}
     void agroup(bool v) { m_agroup = v; }
     void setOrder(DrawPool::DrawOrder order) { m_order = order; }
+
     bool isStatic() { return m_static; }
+
 private:
     static DrawBufferPtr createTemporaryBuffer(DrawPool::DrawOrder order)
     {
@@ -270,6 +274,7 @@ private:
     int m_i{ -1 };
     bool m_agroup{ true };
     bool m_static{ true };
+
     DrawPool::DrawOrder m_order{ DrawPool::DrawOrder::FIRST };
     Point m_ref;
     size_t m_stateHash{ 0 };

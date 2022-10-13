@@ -23,7 +23,6 @@
 #pragma once
 
 #include "../pch.h"
-#include "../util/anyType.h"
 
 namespace stdext
 {
@@ -40,10 +39,10 @@ namespace stdext
         using set = phmap::flat_hash_set<T, Hash, Eq, Alloc>;
 
     template<typename T>
-    concept OnlyEnum = std::is_enum<T>::value;
+    concept OnlyEnum = std::is_enum_v<T>;
 
     template<OnlyEnum Key, uint8_t _Size = UINT8_MAX>
-    class small_dynamic_storage
+    class small_storage
     {
     public:
         template<typename T>
@@ -80,7 +79,7 @@ namespace stdext
 
             try {
                 return std::any_cast<T>(it->second);
-            } catch (std::exception&) {
+            } catch (const std::exception&) {
                 return T();
             }
         }

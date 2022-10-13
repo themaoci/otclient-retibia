@@ -35,7 +35,7 @@
 
 namespace stdext
 {
-    template<class T> void print_ostream(std::ostringstream& stream, const T& last) { stream << last; }
+    template<class T> void print_ostream(const std::ostringstream& stream, const T& last) { stream << last; }
     template<class T, class... Args>
     void print_ostream(std::ostringstream& stream, const T& first, const Args&... rest) { stream << "\t" << first; print_ostream(stream, rest...); }
     template<class... T>
@@ -62,11 +62,11 @@ namespace stdext
     {
         template<typename Tuple, typename... Args> static int call(char* s, size_t maxlen, const char* format, const Tuple& /*tuple*/, const Args&... args)
         {
-        #ifdef _MSC_VER
+#ifdef _MSC_VER
             return _snprintf(s, maxlen, format, args...);
-        #else
+#else
             return snprintf(s, maxlen, format, args...);
-        #endif
+#endif
         }
     };
 

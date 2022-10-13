@@ -57,7 +57,7 @@ void Spawn::load(TiXmlElement* node)
     setCenterPos(centerPos);
     setRadius(node->readType<int32_t>("radius"));
 
-    CreatureTypePtr cType(nullptr);
+    CreatureTypePtr cType;
     for (TiXmlElement* cNode = node->FirstChildElement(); cNode; cNode = cNode->NextSiblingElement()) {
         if (cNode->ValueStr() != "monster" && cNode->ValueStr() != "npc")
             throw Exception("invalid spawn-subnode %s", cNode->ValueStr());
@@ -75,6 +75,7 @@ void Spawn::load(TiXmlElement* node)
         auto dir_ = cNode->readType<int16_t>("direction");
         if (dir_ >= Otc::East && dir_ <= Otc::West)
             dir = static_cast<Otc::Direction>(dir_);
+
         cType->setDirection(dir);
 
         Position placePos;
@@ -96,8 +97,7 @@ void Spawn::save(TiXmlElement* node)
 
     node->SetAttribute("radius", getRadius());
 
-    for (const auto& pair : m_creatures) {
-        const CreatureTypePtr& creature = pair.second;
+    for (const auto& [placePos, creature] : m_creatures) {
         auto* const creatureNode = new TiXmlElement(creature->getRace() == CreatureRaceNpc ? "npc" : "monster");
 
         if (!creatureNode)
@@ -107,7 +107,6 @@ void Spawn::save(TiXmlElement* node)
         creatureNode->SetAttribute("spawntime", creature->getSpawnTime());
         creatureNode->SetAttribute("direction", creature->getDirection());
 
-        const Position& placePos = pair.first;
         assert(placePos.isValid());
 
         creatureNode->SetAttribute("x", placePos.x - c.x);
@@ -253,7 +252,7 @@ void CreatureManager::loadSpawns(const std::string& fileName)
         }
         doc.Clear();
         m_spawnLoaded = true;
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to load '%s': %s", fileName, e.what()));
     }
 }
@@ -278,7 +277,7 @@ void CreatureManager::saveSpawns(const std::string& fileName)
 
         if (!doc.SaveFile("data" + fileName))
             throw Exception("failed to save spawns XML %s: %s", fileName, doc.ErrorDesc());
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         g_logger.error(stdext::format("Failed to save '%s': %s", fileName, e.what()));
     }
 }
@@ -313,15 +312,14 @@ void CreatureManager::loadCreatureBuffer(const std::string& buffer)
     doc.Clear();
 }
 
-void CreatureManager::internalLoadCreatureBuffer(TiXmlElement* attrib, const CreatureTypePtr& m)
+void CreatureManager::internalLoadCreatureBuffer(const TiXmlElement* attrib, const CreatureTypePtr& m)
 {
     if (std::find(m_creatures.begin(), m_creatures.end(), m) != m_creatures.end())
         return;
 
     Outfit out;
 
-    const auto type = attrib->readType<int32_t>("type");
-    if (type > 0) {
+    if (const auto type = attrib->readType<int32_t>("type"); type > 0) {
         out.setCategory(ThingCategoryCreature);
         out.setId(type);
     } else {
@@ -357,7 +355,7 @@ const CreatureTypePtr& CreatureManager::getCreatureByName(std::string name)
 
 const CreatureTypePtr& CreatureManager::getCreatureByLook(int look)
 {
-    auto findFun = [=](const CreatureTypePtr& c) -> bool {
+    auto findFun = [=](const auto& c) -> bool {
         const Outfit& o = c->getOutfit();
         return o.getId() == look || o.getAuxId() == look;
     };
@@ -379,10 +377,7 @@ SpawnPtr CreatureManager::getSpawn(const Position& centerPos)
 
 SpawnPtr CreatureManager::getSpawnForPlacePos(const Position& pos)
 {
-    for (const auto& pair : m_spawns) {
-        const Position& centerPos = pair.first;
-        const SpawnPtr& spawn = pair.second;
-
+    for (const auto& [centerPos, spawn] : m_spawns) {
         if (isInZone(pos, centerPos, spawn->getRadius()))
             return spawn;
     }

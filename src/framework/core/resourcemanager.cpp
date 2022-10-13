@@ -21,7 +21,6 @@
  */
 
 #include <filesystem>
-#include <ranges>
 
 #include "resourcemanager.h"
 #include "filestream.h"
@@ -31,7 +30,6 @@
 #include <framework/platform/platform.h>
 
 #include <physfs.h>
-#include <framework/util/compileXor.h>
 
 ResourceManager g_resources;
 
@@ -51,6 +49,7 @@ bool ResourceManager::discoverWorkDir(const std::string& existentFile)
     // search for modules directory
     std::string possiblePaths[] = { g_platform.getCurrentDir(),
                                     g_resources.getBaseDir(),
+                                    g_resources.getBaseDir() + "/game_data/",
                                     g_resources.getBaseDir() + "../",
                                     g_resources.getBaseDir() + "../share/" + g_app.getCompactName() + "/" };
 
@@ -148,7 +147,9 @@ bool ResourceManager::removeSearchPath(const std::string& path)
 void ResourceManager::searchAndAddPackages(const std::string& packagesDir, const std::string& packageExt)
 {
     auto files = listDirectoryFiles(packagesDir);
-    for (const auto& file : files | std::views::reverse) {
+    for (auto it = files.rbegin(); it != files.rend(); ++it) {
+        const auto& file = *it;
+
         if (!file.ends_with(packageExt))
             continue;
         std::string package = getRealDir(packagesDir) + "/" + file;
@@ -189,7 +190,6 @@ std::string ResourceManager::readFileContents(const std::string& fileName)
     const std::string fullPath = resolvePath(fileName);
 
     //PHYSFS_File* file = PHYSFS_openRead(fullPath.c_str());
-
     PHYSFS_File* file;
 #if ENCRYPTION_PACKED == 1
     if (fileName == "/config.otml") {
@@ -198,11 +198,9 @@ std::string ResourceManager::readFileContents(const std::string& fileName)
         file = PHYSFS_openRead(std::string(fullPath + "$" + ARCHIVE_PASSWORD).c_str());
         //std::cout << PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()) << std::endl << fullPath + "$" + ARCHIVE_PASSWORD << std::endl;
     }
-
 #else
     file = PHYSFS_openRead(fullPath.c_str());
 #endif
-
     if (!file)
         throw Exception("unable to open file '%s': %s", fullPath, PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
 
@@ -344,8 +342,7 @@ std::string ResourceManager::resolvePath(const std::string& path)
     if (path.starts_with("/"))
         fullPath = path;
     else {
-        const std::string scriptPath = "/" + g_lua.getCurrentSourcePath();
-        if (!scriptPath.empty())
+        if (const std::string scriptPath = "/" + g_lua.getCurrentSourcePath(); !scriptPath.empty())
             fullPath += scriptPath + "/";
         fullPath += path;
     }
@@ -359,8 +356,7 @@ std::string ResourceManager::resolvePath(const std::string& path)
 std::string ResourceManager::getRealDir(const std::string& path)
 {
     std::string dir;
-    const char* cdir = PHYSFS_getRealDir(resolvePath(path).c_str());
-    if (cdir)
+    if (const char* cdir = PHYSFS_getRealDir(resolvePath(path).c_str()))
         dir = cdir;
     return dir;
 }
@@ -372,15 +368,23 @@ std::string ResourceManager::getRealPath(const std::string& path)
 
 std::string ResourceManager::getBaseDir()
 {
+#ifdef ANDROID
+    return g_androidManager.getAppBaseDir();
+#else
     return PHYSFS_getBaseDir();
+#endif
 }
 
 std::string ResourceManager::getUserDir()
 {
+#ifdef ANDROID
+    return getBaseDir() + "/";
+#else
     static const char* orgName = g_app.getOrganizationName().data();
     static const char* appName = g_app.getCompactName().data();
 
     return PHYSFS_getPrefDir(orgName, appName);
+#endif
 }
 
 std::string ResourceManager::guessFilePath(const std::string& filename, const std::string& type)
@@ -427,7 +431,7 @@ std::string ResourceManager::encrypt(const std::string& data, const std::string&
 }
 std::string ResourceManager::decrypt(const std::string& data)
 {
-    const auto& password = std::string(ENCRYPTION_PASSWORD);//std::string(ENCRYPTION_PASSWORD);
+    const auto& password = std::string(ENCRYPTION_PASSWORD);
 
     const int len = data.length(),
         plen = password.length();
@@ -453,7 +457,7 @@ std::string ResourceManager::decrypt(const std::string& data)
 
 uint8_t* ResourceManager::decrypt(uint8_t* data, int32_t size)
 {
-    const auto& password = std::string(ENCRYPTION_PASSWORD);//std::string(ENCRYPTION_PASSWORD);
+    const auto& password = std::string(ENCRYPTION_PASSWORD);
     const int plen = password.length();
 
     auto* const new_Data = new uint8_t[size];
@@ -480,8 +484,8 @@ void ResourceManager::runEncryption(const std::string& password)
 {
     std::vector<std::string> excludedExtensions = { ".rar",".ogg",".xml",".dll",".exe", ".log",".otb" };
     for (const auto& entry : std::filesystem::recursive_directory_iterator("./")) {
-        std::string ext = entry.path().extension().string();
-        if (std::find(excludedExtensions.begin(), excludedExtensions.end(), ext) != excludedExtensions.end())
+        if (std::string ext = entry.path().extension().string();
+            std::find(excludedExtensions.begin(), excludedExtensions.end(), ext) != excludedExtensions.end())
             continue;
 
         std::ifstream ifs(entry.path().string(), std::ios_base::binary);

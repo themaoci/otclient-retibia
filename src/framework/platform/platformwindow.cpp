@@ -25,6 +25,9 @@
 #ifdef WIN32
 #include "win32window.h"
 WIN32Window window;
+#elif defined ANDROID
+#include "androidwindow.h"
+AndroidWindow window;
 #else
 #include "x11window.h"
 #include <framework/core/clock.h>
@@ -38,8 +41,7 @@ PlatformWindow& g_window = window;
 
 int PlatformWindow::loadMouseCursor(const std::string& file, const Point& hotSpot)
 {
-    const ImagePtr image = Image::load(file);
-
+    const auto& image = Image::load(file);
     if (!image) {
         g_logger.traceError(stdext::format("unable to load cursor image file %s", file));
         return -1;
@@ -74,16 +76,16 @@ void PlatformWindow::processKeyDown(Fw::Key keyCode)
     if (keyCode == Fw::KeyCtrl) {
         m_inputEvent.keyboardModifiers |= Fw::KeyboardCtrlModifier;
         return;
-    #if defined(__APPLE__)
+#if defined(__APPLE__)
     } else if (keyCode == Fw::KeyMeta) {
         m_inputEvent.keyboardModifiers |= Fw::KeyboardAltModifier;
         return;
-    #else
+#else
     }
     if (keyCode == Fw::KeyAlt) {
         m_inputEvent.keyboardModifiers |= Fw::KeyboardAltModifier;
         return;
-    #endif
+#endif
     }
     if (keyCode == Fw::KeyShift) {
         m_inputEvent.keyboardModifiers |= Fw::KeyboardShiftModifier;
@@ -119,16 +121,16 @@ void PlatformWindow::processKeyUp(Fw::Key keyCode)
     if (keyCode == Fw::KeyCtrl) {
         m_inputEvent.keyboardModifiers &= ~Fw::KeyboardCtrlModifier;
         return;
-    #if defined(__APPLE__)
+#if defined(__APPLE__)
     } else if (keyCode == Fw::KeyMeta) {
         m_inputEvent.keyboardModifiers &= ~Fw::KeyboardAltModifier;
         return;
-    #else
+#else
     }
     if (keyCode == Fw::KeyAlt) {
         m_inputEvent.keyboardModifiers &= ~Fw::KeyboardAltModifier;
         return;
-    #endif
+#endif
     }
     if (keyCode == Fw::KeyShift) {
         m_inputEvent.keyboardModifiers &= ~Fw::KeyboardShiftModifier;

@@ -33,19 +33,20 @@ void EventDispatcher::shutdown()
         poll();
 
     while (!m_scheduledEventList.empty()) {
-        const ScheduledEventPtr scheduledEvent = m_scheduledEventList.top();
-        scheduledEvent->cancel();
+        m_scheduledEventList.top()->cancel();
         m_scheduledEventList.pop();
     }
+
     m_disabled = true;
 }
 
 void EventDispatcher::poll()
 {
     for (int count = 0, max = m_scheduledEventList.size(); count < max && !m_scheduledEventList.empty(); ++count) {
-        ScheduledEventPtr scheduledEvent = m_scheduledEventList.top();
+        const auto scheduledEvent = m_scheduledEventList.top();
         if (scheduledEvent->remainingTicks() > 0)
             break;
+
         m_scheduledEventList.pop();
         scheduledEvent->execute();
 
@@ -59,8 +60,7 @@ void EventDispatcher::poll()
     int loops = 0;
     while (m_pollEventsSize > 0) {
         if (loops > 50) {
-            static Timer reportTimer;
-            if (reportTimer.running() && reportTimer.ticksElapsed() > 100) {
+            if (static Timer reportTimer; reportTimer.running() && reportTimer.ticksElapsed() > 100) {
                 g_logger.error("ATTENTION the event list is not getting empty, this could be caused by some bad code");
                 reportTimer.restart();
             }
@@ -68,7 +68,7 @@ void EventDispatcher::poll()
         }
 
         for (int i = 0; i < m_pollEventsSize; ++i) {
-            const EventPtr event = m_eventList.front();
+            const auto event = m_eventList.front();
             m_eventList.pop_front();
             event->execute();
         }

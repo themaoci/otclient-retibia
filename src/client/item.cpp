@@ -38,7 +38,7 @@
 
 ItemPtr Item::create(int id)
 {
-    const auto& item(new Item);
+    const ItemPtr& item(new Item);
     item->setId(id);
 
     return item;
@@ -46,7 +46,7 @@ ItemPtr Item::create(int id)
 
 ItemPtr Item::createFromOtb(int id)
 {
-    const auto& item(new Item);
+    const ItemPtr& item(new Item);
     item->setOtbId(id);
 
     return item;
@@ -57,7 +57,7 @@ std::string Item::getName()
     return g_things.findItemTypeByClientId(m_clientId)->getName();
 }
 
-void Item::draw(const Point& dest, float scaleFactor, bool animate, uint32_t flags, const Highlight& highLight, TextureType textureType, Color color, LightView* lightView)
+void Item::draw(const Point& dest, float scaleFactor, bool animate, uint32_t flags, TextureType textureType, bool isMarked, LightView* lightView)
 {
     if (m_clientId == 0 || !canDraw())
         return;
@@ -65,18 +65,15 @@ void Item::draw(const Point& dest, float scaleFactor, bool animate, uint32_t fla
     // determine animation phase
     const int animationPhase = calculateAnimationPhase(animate);
 
-    if (m_color != Color::alpha)
-        color = m_color;
-
     tryOptimize();
 
-    getThingType()->draw(dest, scaleFactor, 0, m_numPatternX, m_numPatternY, m_numPatternZ, animationPhase, flags, textureType, color, lightView, m_drawBuffer);
+    getThingType()->draw(dest, scaleFactor, 0, m_numPatternX, m_numPatternY, m_numPatternZ, animationPhase, flags, textureType, m_color, lightView, m_drawBuffer);
     if (textureType != TextureType::ALL_BLANK && m_shader) {
         g_drawPool.setShaderProgram(m_shader, true, m_shaderAction);
     }
 
-    if (highLight.enabled && this == highLight.thing) {
-        getThingType()->draw(dest, scaleFactor, 0, m_numPatternX, m_numPatternY, m_numPatternZ, animationPhase, flags, TextureType::ALL_BLANK, highLight.rgbColor);
+    if (isMarked) {
+        getThingType()->draw(dest, scaleFactor, 0, m_numPatternX, m_numPatternY, m_numPatternZ, animationPhase, flags, TextureType::ALL_BLANK, getMarkedColor());
     }
 }
 
@@ -88,8 +85,8 @@ void Item::setId(uint32_t id)
     m_serverId = g_things.findItemTypeByClientId(id)->getServerId();
     m_clientId = id;
     m_thingType = nullptr;
-    //generateBuffer();
     createBuffer();
+
     // Shader example on only items that can be marketed.
     /*
     if (isMarketable()) {
@@ -109,7 +106,7 @@ void Item::setOtbId(uint16_t id)
     if (!g_things.isValidOtbId(id))
         id = 0;
 
-    const auto itemType = g_things.getItemType(id);
+    const auto& itemType = g_things.getItemType(id);
     m_serverId = id;
 
     id = itemType->getClientId();
@@ -118,7 +115,6 @@ void Item::setOtbId(uint16_t id)
 
     m_clientId = id;
     m_thingType = nullptr;
-    //generateBuffer();
     createBuffer();
 }
 
@@ -128,7 +124,7 @@ void Item::createBuffer()
     DrawPool::DrawOrder order = DrawPool::DrawOrder::NONE;
     if (isSingleGround())
         order = DrawPool::DrawOrder::FIRST;
-    else if (isSingleGroundBorder() && !hasElevation()) // from: isGroundBorder()
+    else if (isSingleGroundBorder() && !hasElevation())
         order = DrawPool::DrawOrder::SECOND;
     else if ((isCommon() || isOnBottom()) && isSingleDimension() && !hasDisplacement() && isNotMoveable())
         order = DrawPool::DrawOrder::THIRD;
@@ -145,8 +141,7 @@ void Item::tryOptimize()
             const auto order = isTopGround() ? DrawPool::DrawOrder::FOURTH : DrawPool::DrawOrder::THIRD;
             m_drawBuffer = std::make_shared<DrawBuffer>(order, true, false);
         }
-    }
-    else if (m_drawBuffer && !m_drawBuffer->isStatic()) {
+    } else if (m_drawBuffer && !m_drawBuffer->isStatic()) {
         m_drawBuffer->agroup(false);
     }
 }
@@ -169,6 +164,7 @@ void Item::unserializeItem(const BinaryTreePtr& in)
             if (attrib == 0)
                 break;
 
+            m_attribs = std::optional<stdext::dynamic_storage<ItemAttr>>{};
             switch (attrib) {
                 case ATTR_COUNT:
                 case ATTR_RUNE_CHARGES:
@@ -181,12 +177,12 @@ void Item::unserializeItem(const BinaryTreePtr& in)
                 case ATTR_SCRIPTPROTECTED:
                 case ATTR_DUALWIELD:
                 case ATTR_DECAYING_STATE:
-                    m_attribs.set(attrib, in->getU8());
+                    (*m_attribs).set(attrib, in->getU8());
                     break;
                 case ATTR_ACTION_ID:
                 case ATTR_UNIQUE_ID:
                 case ATTR_DEPOT_ID:
-                    m_attribs.set(attrib, in->getU16());
+                    (*m_attribs).set(attrib, in->getU16());
                     break;
                 case ATTR_CONTAINER_ITEMS:
                 case ATTR_ATTACK:
@@ -201,15 +197,14 @@ void Item::unserializeItem(const BinaryTreePtr& in)
                 case ATTR_SLEEPERGUID:
                 case ATTR_SLEEPSTART:
                 case ATTR_ATTRIBUTE_MAP:
-                    m_attribs.set(attrib, in->getU32());
+                    (*m_attribs).set(attrib, in->getU32());
                     break;
                 case ATTR_TELE_DEST:
                 {
-                    Position pos;
-                    pos.x = in->getU16();
-                    pos.y = in->getU16();
-                    pos.z = in->getU8();
-                    m_attribs.set(attrib, pos);
+                    const uint16_t x = in->getU16();
+                    const uint16_t y = in->getU16();
+                    const uint8_t z = in->getU8();
+                    (*m_attribs).set(attrib, Position{ x, y, z });
                     break;
                 }
                 case ATTR_NAME:
@@ -217,13 +212,13 @@ void Item::unserializeItem(const BinaryTreePtr& in)
                 case ATTR_DESC:
                 case ATTR_ARTICLE:
                 case ATTR_WRITTENBY:
-                    m_attribs.set(attrib, in->getString());
+                    (*m_attribs).set(attrib, in->getString());
                     break;
                 default:
                     throw Exception("invalid item attribute %d", attrib);
             }
         }
-    } catch (stdext::exception& e) {
+    } catch (const stdext::exception& e) {
         g_logger.error(stdext::format("Failed to unserialize OTBM item: %s", e.what()));
     }
 }
@@ -239,7 +234,7 @@ void Item::serializeItem(const OutputBinaryTreePtr& out)
     out->addU8(ATTR_CHARGES);
     out->addU16(getCountOrSubType());
 
-    const auto dest = m_attribs.get<Position>(ATTR_TELE_DEST);
+    const auto& dest = (*m_attribs).get<Position>(ATTR_TELE_DEST);
     if (dest.isValid()) {
         out->addU8(ATTR_TELE_DEST);
         out->addPos(dest.x, dest.y, dest.z);
@@ -255,8 +250,8 @@ void Item::serializeItem(const OutputBinaryTreePtr& out)
         out->addU8(getDoorId());
     }
 
-    const auto aid = m_attribs.get<uint16_t>(ATTR_ACTION_ID);
-    const auto uid = m_attribs.get<uint16_t>(ATTR_UNIQUE_ID);
+    const auto aid = (*m_attribs).get<uint16_t>(ATTR_ACTION_ID);
+    const auto uid = (*m_attribs).get<uint16_t>(ATTR_UNIQUE_ID);
     if (aid) {
         out->addU8(ATTR_ACTION_ID);
         out->addU16(aid);
@@ -267,13 +262,11 @@ void Item::serializeItem(const OutputBinaryTreePtr& out)
         out->addU16(uid);
     }
 
-    const std::string text = getText();
-    if (g_things.getItemType(m_serverId)->isWritable() && !text.empty()) {
+    if (const std::string text = getText(); g_things.getItemType(m_serverId)->isWritable() && !text.empty()) {
         out->addU8(ATTR_TEXT);
         out->addString(text);
     }
-    const std::string desc = getDescription();
-    if (!desc.empty()) {
+    if (const std::string desc = getDescription(); !desc.empty()) {
         out->addU8(ATTR_DESC);
         out->addString(desc);
     }
@@ -315,8 +308,8 @@ void Item::updatePatterns()
     if (!isValid())
         return;
 
-    const int numPatternX = getNumPatternX(),
-        numPatternY = getNumPatternY();
+    const int numPatternX = getNumPatternX();
+    const int numPatternY = getNumPatternY();
 
     if (isStackable() && numPatternX == 4 && numPatternY == 2) {
         if (m_countOrSubType <= 0) {

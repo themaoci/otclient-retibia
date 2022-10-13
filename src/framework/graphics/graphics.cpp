@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  */
 
+#include "graphics.h"
 #include "fontmanager.h"
 
 #include "framebuffermanager.h"
 #include "texturemanager.h"
-#include <framework/graphics/graphics.h>
 #include <framework/platform/platformwindow.h>
 
 Graphics g_graphics;
@@ -34,9 +34,9 @@ void Graphics::init()
     g_logger.info(stdext::format("GPU %s", glGetString(GL_RENDERER)));
     g_logger.info(stdext::format("OpenGL %s", glGetString(GL_VERSION)));
 
+#ifndef OPENGL_ES
     // init GL extensions
-    const GLenum err = glewInit();
-    if (err != GLEW_OK)
+    if (const GLenum err = glewInit(); err != GLEW_OK)
         g_logger.fatal(stdext::format("Unable to init GLEW: %s", glewGetErrorString(err)));
 
     // overwrite framebuffer API if needed
@@ -48,6 +48,7 @@ void Graphics::init()
         glCheckFramebufferStatus = glCheckFramebufferStatusEXT;
         glGenerateMipmap = glGenerateMipmapEXT;
     }
+#endif
 
     // blending is always enabled
     glEnable(GL_BLEND);

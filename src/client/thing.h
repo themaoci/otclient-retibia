@@ -27,26 +27,15 @@
 #include "thingtypemanager.h"
 #include <framework/luaengine/luaobject.h>
 #include <framework/graphics/drawpool.h>
+#include <framework/core/clock.h>
 
-struct Highlight
-{
-    int fadeLevel;
-    Color rgbColor = Color::alpha;
-    ThingPtr thing;
-    ScheduledEventPtr listeningEvent;
-
-    bool enabled{ false },
-        update{ false },
-        invertedColorSelection{ false };
-};
-
-// @bindclass
+ // @bindclass
 #pragma pack(push,1) // disable memory alignment
 class Thing : public LuaObject
 {
 public:
     ~Thing() override = default;
-    virtual void draw(const Point& /*dest*/, float /*scaleFactor*/, bool /*animate*/, uint32_t flags, const Highlight& /*highLight*/, TextureType /*textureType*/ = TextureType::NONE, Color /* color */ = Color::white, LightView* /*lightView*/ = nullptr) {}
+    virtual void draw(const Point& /*dest*/, float /*scaleFactor*/, bool /*animate*/, uint32_t flags, TextureType /*textureType*/ = TextureType::NONE, bool isMarked = false, LightView* /*lightView*/ = nullptr) {}
     virtual void setId(uint32_t /*id*/) {}
 
     virtual void setPosition(const Position& position, uint8_t stackPos = 0, bool hasElevation = false);
@@ -142,6 +131,11 @@ public:
     bool isUnwrapable() { return getThingType()->isUnwrapable(); }
     bool isTopEffect() { return getThingType()->isTopEffect(); }
     bool hasAction() { return getThingType()->hasAction(); }
+    bool hasWearOut() { return getThingType()->hasWearOut(); }
+    bool hasClockExpire() { return getThingType()->hasClockExpire(); }
+    bool hasExpire() { return getThingType()->hasExpire(); }
+    bool hasExpireStop() { return getThingType()->hasExpireStop(); }
+    bool isPodium() { return getThingType()->isPodium(); }
     bool isOpaque() { return getThingType()->isOpaque(); }
     bool isSingleDimension() { return getThingType()->isSingleDimension(); }
     bool isTall(const bool useRealSize = false) { return getThingType()->isTall(useRealSize); }
@@ -160,19 +154,20 @@ public:
     virtual void onAppear() {}
     virtual void onDisappear() {}
 
-protected:
-    //void generateBuffer();
+    const Color& getMarkedColor() { m_markedColor.setAlpha(0.1f + std::abs(500 - g_clock.millis() % 1000) / 1000.0f); return m_markedColor; }
 
-    uint8_t
-        m_numPatternX{ 0 },
-        m_numPatternY{ 0 },
-        m_numPatternZ{ 0 };
+protected:
+    uint8_t m_numPatternX{ 0 };
+    uint8_t m_numPatternY{ 0 };
+    uint8_t m_numPatternZ{ 0 };
 
     uint16_t m_datId{ 0 };
 
     Position m_position;
     ThingTypePtr m_thingType;
     DrawBufferPtr m_drawBuffer;
+
+    Color m_markedColor{ Color::yellow };
 
     // Shader
     PainterShaderProgramPtr m_shader;

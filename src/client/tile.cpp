@@ -30,16 +30,14 @@
 #include <framework/core/eventdispatcher.h>
 #include <framework/graphics/drawpoolmanager.h>
 
-#include <ranges>
-
 Tile::Tile(const Position& position) : m_position(position)
 {
     m_completelyCoveredCache.fill(-1);
 }
 
-void Tile::drawThing(const ThingPtr& thing, const Point& dest, float scaleFactor, bool animate, int flags, LightView* lightView)
+void Tile::drawThing(const ThingPtr& thing, const Point& dest, float scaleFactor, int flags, LightView* lightView, bool animate)
 {
-    thing->draw(dest, scaleFactor, animate, flags, m_highlight, TextureType::NONE, Color::white, lightView);
+    thing->draw(dest, scaleFactor, animate, flags, TextureType::NONE, m_selectType != TileSelectType::NONE && m_highlightThing == thing, lightView);
 
     if (thing->isItem()) {
         m_drawElevation += thing->getElevation();
@@ -57,20 +55,21 @@ void Tile::draw(const Point& dest, const MapPosInfo& mapRect, float scaleFactor,
         if (!thing->isGround() && !thing->isGroundBorder())
             break;
 
-        drawThing(thing, dest - m_drawElevation * scaleFactor, scaleFactor, true, flags, lightView);
+        drawThing(thing, dest - m_drawElevation * scaleFactor, scaleFactor, flags, lightView);
     }
 
     if (m_countFlag.hasBottomItem) {
         for (const auto& item : m_things) {
             if (!item->isOnBottom()) continue;
-            drawThing(item, dest - m_drawElevation * scaleFactor, scaleFactor, true, flags, lightView);
+            drawThing(item, dest - m_drawElevation * scaleFactor, scaleFactor, flags, lightView);
         }
     }
 
     if (m_countFlag.hasCommonItem) {
-        for (const auto& item : m_things | std::views::reverse) {
+        for (auto it = m_things.rbegin(); it != m_things.rend(); ++it) {
+            const auto& item = *it;
             if (!item->isCommon()) continue;
-            drawThing(item, dest - m_drawElevation * scaleFactor, scaleFactor, true, flags, lightView);
+            drawThing(item, dest - m_drawElevation * scaleFactor, scaleFactor, flags, lightView);
         }
     }
 
@@ -80,6 +79,7 @@ void Tile::draw(const Point& dest, const MapPosInfo& mapRect, float scaleFactor,
         tile->drawTop(tile->m_lastDrawDest, scaleFactor, flags, true);
     }
 
+    // this true value in drawCreature fixes light flickering (turning on and off)
     drawCreature(dest, mapRect, scaleFactor, flags, isCovered, true, lightView);
     drawTop(dest, scaleFactor, flags, false, lightView);
 }
@@ -94,7 +94,7 @@ void Tile::drawCreature(const Point& dest, const MapPosInfo& mapRect, float scal
             if (!thing->isCreature() || thing->static_self_cast<Creature>()->isWalking()) continue;
 
             const Point& cDest = dest - m_drawElevation * scaleFactor;
-            thing->draw(cDest, scaleFactor, true, flags, m_highlight, TextureType::NONE, Color::white, lightView);
+            drawThing(thing, cDest, scaleFactor, flags, lightView);
             thing->static_self_cast<Creature>()->drawInformation(mapRect, cDest, scaleFactor, isCovered, flags);
         }
     }
@@ -104,7 +104,7 @@ void Tile::drawCreature(const Point& dest, const MapPosInfo& mapRect, float scal
             dest.x + ((creature->getPosition().x - m_position.x) * SPRITE_SIZE - m_drawElevation) * scaleFactor,
             dest.y + ((creature->getPosition().y - m_position.y) * SPRITE_SIZE - m_drawElevation) * scaleFactor
         );
-        creature->draw(cDest, scaleFactor, true, flags, m_highlight, TextureType::NONE, Color::white, lightView);
+        drawThing(creature, cDest, scaleFactor, flags, lightView);
         creature->drawInformation(mapRect, cDest, scaleFactor, isCovered, flags);
     }
 }
@@ -131,7 +131,7 @@ void Tile::drawTop(const Point& dest, float scaleFactor, int flags, bool forceDr
     if (m_countFlag.hasTopItem) {
         for (const auto& item : m_things) {
             if (!item->isOnTop()) continue;
-            drawThing(item, dest, scaleFactor, true, flags, lightView);
+            drawThing(item, dest, scaleFactor, flags, lightView);
         }
     }
 }
@@ -156,7 +156,6 @@ void Tile::removeWalkingCreature(const CreaturePtr& creature)
     if (it != m_walkingCreatures.end()) {
         analyzeThing(creature, false);
         m_walkingCreatures.erase(it);
-        checkForDetachableThing();
     }
 }
 
@@ -232,8 +231,9 @@ void Tile::addThing(const ThingPtr& thing, int stackPos)
     // common items are drawn from back to front, so if the item being added now is common and has elevation,
     // look for any item behind it and destroy its buffer.
     if (m_countFlag.hasCommonItem && thing->isCommon() && thing->hasElevation()) {
-        for (const auto& item : m_things | std::views::reverse) {
-            if (item->isCommon()) item->destroyBuffer();
+        for (auto it = m_things.rbegin(); it != m_things.rend(); ++it) {
+            if (const auto& item = *it; item->isCommon())
+                item->destroyBuffer();
         }
     }
 
@@ -243,9 +243,7 @@ void Tile::addThing(const ThingPtr& thing, int stackPos)
     const bool hasElev = hasElevation();
 
     analyzeThing(thing, true);
-    if (checkForDetachableThing() && m_highlight.enabled) {
-        select();
-    }
+    checkForDetachableThing();
 
     if (size > MAX_THINGS)
         removeThing(m_things[MAX_THINGS]);
@@ -387,7 +385,8 @@ uint8_t Tile::getMinimapColorByte()
     if (m_minimapColor != 0)
         return m_minimapColor;
 
-    for (const auto& thing : m_things | std::views::reverse) {
+    for (auto it = m_things.rbegin(); it != m_things.rend(); ++it) {
+        const auto& thing = *it;
         if (thing->isCreature() || thing->isCommon())
             continue;
 
@@ -647,11 +646,11 @@ void Tile::checkTranslucentLight()
     Position downPos = m_position;
     if (!downPos.down()) return;
 
-    const TilePtr tile = g_map.getOrCreateTile(downPos);
+    const auto& tile = g_map.getOrCreateTile(downPos);
     if (!tile)
         return;
 
-    for (const ThingPtr& thing : m_things) {
+    for (const auto& thing : m_things) {
         if (thing->isTranslucent() || thing->hasLensHelp()) {
             tile->m_flags |= TILESTATE_TRANSLUECENT_LIGHT;
             return;
@@ -663,19 +662,8 @@ void Tile::checkTranslucentLight()
 
 bool Tile::checkForDetachableThing()
 {
-    if (m_highlight.thing = getTopCreature())
+    if ((m_highlightThing = getTopCreature()))
         return true;
-
-    if (m_highlightWithoutFilter) {
-        for (const auto& item : m_things | std::views::reverse) {
-            if (!item->canDraw()) continue;
-
-            m_highlight.thing = item;
-            return true;
-        }
-
-        return false;
-    }
 
     if (m_countFlag.hasCommonItem) {
         for (const auto& item : m_things) {
@@ -683,26 +671,28 @@ bool Tile::checkForDetachableThing()
                 continue;
             }
 
-            m_highlight.thing = item;
+            m_highlightThing = item;
             return true;
         }
     }
 
     if (m_countFlag.hasBottomItem) {
-        for (const auto& item : m_things | std::views::reverse) {
+        for (auto it = m_things.rbegin(); it != m_things.rend(); ++it) {
+            const auto& item = *it;
             if (!item->isOnBottom() || !item->canDraw() || item->isIgnoreLook() || item->isFluidContainer()) continue;
-            m_highlight.thing = item;
+            m_highlightThing = item;
             return true;
         }
     }
 
     if (m_countFlag.hasTopItem) {
-        for (const auto& item : m_things | std::views::reverse) {
+        for (auto it = m_things.rbegin(); it != m_things.rend(); ++it) {
+            const auto& item = *it;
             if (!item->isOnTop()) break;
             if (!item->canDraw() || item->isIgnoreLook()) continue;
 
             if (item->hasLensHelp()) {
-                m_highlight.thing = item;
+                m_highlightThing = item;
                 return true;
             }
         }
@@ -803,40 +793,24 @@ void Tile::analyzeThing(const ThingPtr& thing, bool add)
         m_countFlag.hasNoWalkableEdge += value;
 }
 
-void Tile::select(const bool noFilter)
+void Tile::select(TileSelectType selectType)
 {
-    unselect();
-    if (noFilter != m_highlightWithoutFilter) {
-        m_highlightWithoutFilter = noFilter;
-        checkForDetachableThing();
+    if (selectType == TileSelectType::NO_FILTERED) {
+        m_highlightThing = getTopCreature();
+        if (!m_highlightThing)
+            m_highlightThing = m_things.back();
     }
 
-    if (!m_highlight.thing) return;
-
-    m_highlight.enabled = true;
-    m_highlight.invertedColorSelection = false;
-    m_highlight.fadeLevel = HIGHTLIGHT_FADE_START;
-
-    const auto self = this->static_self_cast<Tile>();
-    m_highlight.listeningEvent = g_dispatcher.cycleEvent([self] {
-        auto& highLight = self->m_highlight;
-
-        highLight.fadeLevel += 10 * (highLight.invertedColorSelection ? 1 : -1);
-        highLight.rgbColor = Color(static_cast<uint8_t>(255), static_cast<uint8_t>(255), static_cast<uint8_t>(0), static_cast<uint8_t>(highLight.fadeLevel));
-
-        if (highLight.invertedColorSelection ? highLight.fadeLevel > HIGHTLIGHT_FADE_END : highLight.fadeLevel < HIGHTLIGHT_FADE_START) {
-            highLight.invertedColorSelection = !highLight.invertedColorSelection;
-        }
-    }, 40);
+    m_selectType = selectType;
 }
+
 
 void Tile::unselect()
 {
-    m_highlight.enabled = false;
-    if (m_highlight.listeningEvent) {
-        m_highlight.listeningEvent->cancel();
-        m_highlight.listeningEvent = nullptr;
-    }
+    if (m_selectType == TileSelectType::NO_FILTERED)
+        checkForDetachableThing();
+
+    m_selectType = TileSelectType::NONE;
 }
 
 bool Tile::canRender(uint32_t& flags, const Position& cameraPosition, const AwareRange viewPort, LightView* lightView)

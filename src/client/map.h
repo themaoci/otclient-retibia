@@ -198,7 +198,7 @@ public:
     const TilePtr& createTileEx(const Position& pos, const Items&... items);
     const TilePtr& getOrCreateTile(const Position& pos);
     const TilePtr& getTile(const Position& pos);
-    const TileList getTiles(int8_t floor = -1);
+    TileList getTiles(int8_t floor = -1);
     void cleanTile(const Position& pos);
 
     // tile zone related
@@ -283,7 +283,7 @@ private:
 
     stdext::map<uint32_t, Color> m_zoneColors;
 
-    stdext::small_dynamic_storage<OTBM_ItemAttr, OTBM_ATTR_LAST> m_attribs;
+    stdext::small_storage<OTBM_ItemAttr, OTBM_ATTR_LAST> m_attribs;
 
     uint8_t m_animationFlags{ 0 };
     uint32_t m_zoneFlags{ 0 };

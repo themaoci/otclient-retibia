@@ -26,6 +26,7 @@
 
 namespace stdext
 {
+    // clang c++20 dont support std::has_single_bit
     inline bool is_power_of_two(size_t v) { return ((v != 0) && !(v & (v - 1))); }
     inline size_t to_power_of_two(size_t v) { if (v == 0) return 0; size_t r = 1; while (r < v && r != 0xffffffff) r <<= 1; return r; }
 

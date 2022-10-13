@@ -37,26 +37,23 @@ public:
 
     CreaturePtr getCreature() { return m_creature; }
     Outfit getOutfit() { return m_creature ? m_creature->getOutfit() : Outfit(); }
+
     bool isFixedCreatureSize() { return m_fixedCreatureSize; }
 
     void setAutoRotating(bool value) { m_autoRotating = value; }
     void setDirection(Otc::Direction direction) { m_direction = direction; }
     Otc::Direction getDirection() { return m_direction; }
-
-
     void setAnimate(bool value) { m_animate = value; }
     bool isAnimating() { return m_animate; }
     void setCenter(bool value);
-
     void setOldScaling(bool value) { m_oldScaling = value; }
 
 protected:
     void onStyleApply(const std::string_view styleName, const OTMLNodePtr& styleNode) override;
-
-    CreaturePtr m_creature;
     bool m_autoRotating{ false };
     bool m_animate{ false };
     bool m_oldScaling{ false };
     Otc::Direction m_direction = Otc::South;
+    CreaturePtr m_creature;
     bool m_fixedCreatureSize{ false };
 };

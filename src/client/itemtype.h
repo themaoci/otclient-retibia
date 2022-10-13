@@ -148,10 +148,10 @@ public:
 
     bool isNull() { return m_null; }
     bool isWritable() { return m_attribs.get<bool>(ItemTypeAttrWritable); }
-    bool hasAttrib(const ItemTypeAttr typeAttribute) { return m_attribs.has(typeAttribute); }
+
 private:
     ItemCategory m_category{ ItemCategoryInvalid };
     bool m_null{ true };
 
-    stdext::small_dynamic_storage<ItemTypeAttr, ItemTypeAttrLast> m_attribs;
+    stdext::small_storage<ItemTypeAttr, ItemTypeAttrLast> m_attribs;
 };

@@ -71,13 +71,11 @@ void Application::initFileMap(
         moduleRTsize = std::filesystem::file_size(g_resources.getWorkDir() + "modules.zip");
         std::cout << "modules size : " << moduleRTsize << std::endl;
     } catch(...) {}
-
     g_app.MODULE_SIZE = moduleRTsize;
 #else
     g_app.FILE_SIZE = std::filesystem::file_size(applicationPath);
     g_app.MODULE_SIZE = 0;
     g_app.MODULE_FILE_COUNT = 0;
-
     std::vector<std::string> excludedExtensions = { XorStr(".lua"),XorStr(".otui"),XorStr(".otmod") };
     for (const auto& entry : std::filesystem::recursive_directory_iterator("./")) {
         std::string ext = entry.path().extension().string();
@@ -206,6 +204,8 @@ std::string Application::getOs()
     return "mac";
 #elif __linux
     return "linux";
+#elif ANDROID
+    return "android";
 #else
     return "unknown";
 #endif
@@ -214,6 +214,7 @@ std::string Application::getOs()
 std::string Application::getClientFileSize() { return std::format("{}", FILE_SIZE); }
 std::string Application::getClientModulesSize() { return std::format("{}", MODULE_SIZE); }
 std::string Application::getClientModuleFileCount() { return std::format("{}", MODULE_FILE_COUNT); }
+
 // https://stackoverflow.com/a/46448040
 std::string Application::getBuildRevision()
 {

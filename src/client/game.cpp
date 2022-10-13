@@ -68,7 +68,7 @@ void Game::resetGameStates()
     m_unjustifiedPoints = UnjustifiedPoints();
     m_nextScheduledDir = Otc::InvalidDirection;
 
-    for (auto& it : m_containers) {
+    for (const auto& it : m_containers) {
         const ContainerPtr& container = it.second;
         if (container)
             container->onClose();
@@ -174,9 +174,7 @@ void Game::processGameStart()
     disableBotCall();
 
     if (g_game.getFeature(Otc::GameClientPing) || g_game.getFeature(Otc::GameExtendedClientPing)) {
-        m_pingEvent = g_dispatcher.scheduleEvent([this] {
-            g_game.ping();
-        }, m_pingDelay);
+        m_pingEvent = g_dispatcher.scheduleEvent([] { g_game.ping(); }, m_pingDelay);
     }
 
     m_checkConnectionEvent = g_dispatcher.cycleEvent([this] {
@@ -264,9 +262,7 @@ void Game::processPingBack()
     } else
         g_logger.error("got an invalid ping from server");
 
-    m_pingEvent = g_dispatcher.scheduleEvent([this] {
-        g_game.ping();
-    }, m_pingDelay);
+    m_pingEvent = g_dispatcher.scheduleEvent([] { g_game.ping(); }, m_pingDelay);
 }
 
 void Game::processTextMessage(Otc::MessageMode mode, const std::string_view text)
@@ -593,7 +589,7 @@ bool Game::walk(const Otc::Direction direction, bool isKeyDown /*= false*/)
         m_localPlayer->preWalk(direction);
     } else {
         // check if can walk to a lower floor
-        auto canChangeFloorDown = [&]() -> bool {
+        const auto& canChangeFloorDown = [&]() -> bool {
             Position pos = toPos;
             if (!pos.down())
                 return false;
@@ -606,16 +602,15 @@ bool Game::walk(const Otc::Direction direction, bool isKeyDown /*= false*/)
         };
 
         // check if can walk to a higher floor
-        auto canChangeFloorUp = [&]() -> bool {
-            const TilePtr fromTile = m_localPlayer->getTile();
-            if (!fromTile || !fromTile->hasElevation(3))
+        const auto& canChangeFloorUp = [&]() -> bool {
+            if (const auto& fromTile = m_localPlayer->getTile(); !fromTile || !fromTile->hasElevation(3))
                 return false;
 
             Position pos = toPos;
             if (!pos.up())
 
                 return false;
-            if (const auto& toTile = g_map.getTile(pos); toTile && toTile->hasElevation(3))
+            if (const auto& toTile = g_map.getTile(pos); !toTile || !toTile->isWalkable())
                 return false;
 
             return true;
@@ -638,12 +633,12 @@ bool Game::walk(const Otc::Direction direction, bool isKeyDown /*= false*/)
     return true;
 }
 
-void Game::autoWalk(std::vector<Otc::Direction> dirs, Position startPos)
+void Game::autoWalk(const std::vector<Otc::Direction>& dirs, const Position& startPos)
 {
     if (!canPerformGameAction())
         return;
 
-    if (dirs.empty())
+    if (dirs.size() == 0)
         return;
 
     // protocol limits walk path
@@ -657,10 +652,8 @@ void Game::autoWalk(std::vector<Otc::Direction> dirs, Position startPos)
         cancelFollow();
     }
 
-    const auto it = dirs.begin();
-    const Otc::Direction direction = *it;
+    const Otc::Direction direction = *dirs.begin();
 
-    const TilePtr toTile = g_map.getTile(startPos.translatedToDirection(direction));
     if (const auto& toTile = g_map.getTile(startPos.translatedToDirection(direction))) {
         if (startPos == m_localPlayer->m_lastPrewalkDestination && toTile->isWalkable() && !m_localPlayer->isWalking() && m_localPlayer->canWalk(true)) {
             m_localPlayer->preWalk(direction);
@@ -807,8 +800,7 @@ void Game::useInventoryItem(int itemId)
     if (!canPerformGameAction() || !g_things.isValidDatId(itemId, ThingCategoryItem))
         return;
 
-    const auto pos = Position(0xFFFF, 0, 0); // means that is a item in inventory
-
+    const auto& pos = Position(0xFFFF, 0, 0); // means that is a item in inventory
     m_protocolGame->sendUseItem(pos, itemId, 0, 0);
 }
 
@@ -832,8 +824,7 @@ void Game::useInventoryItemWith(int itemId, const ThingPtr& toThing)
     if (!canPerformGameAction() || !toThing)
         return;
 
-    const auto pos = Position(0xFFFF, 0, 0); // means that is a item in inventory
-
+    const auto& pos = Position(0xFFFF, 0, 0); // means that is a item in inventory
     if (toThing->isCreature())
         m_protocolGame->sendUseOnCreature(pos, itemId, 0, toThing->getId());
     else
@@ -842,7 +833,7 @@ void Game::useInventoryItemWith(int itemId, const ThingPtr& toThing)
 
 ItemPtr Game::findItemInContainers(uint32_t itemId, int subType)
 {
-    for (auto& it : m_containers) {
+    for (const auto& it : m_containers) {
         if (const auto& container = it.second) {
             if (const auto& item = container->findItemById(itemId, subType)) {
                 return item;
@@ -1722,11 +1713,31 @@ void Game::setClientVersion(int version)
 
     if (version >= 1200) {
         enableFeature(Otc::GamePrey);
+        enableFeature(Otc::GameThingQuickLoot);
+    }
+
+    if (version >= 1260) {
+        enableFeature(Otc::GameThingQuiver);
+    }
+
+    if (version >= 1264) {
+        enableFeature(Otc::GameThingPodium);
+    }
+
+    if (version >= 1272) {
+        enableFeature(Otc::GameThingUpgradeClassification);
     }
 
     if (version >= 1281) {
         disableFeature(Otc::GameEnvironmentEffect);
         disableFeature(Otc::GameItemAnimationPhase);
+    }
+
+    if (version >= 1290) {
+        enableFeature(Otc::GameThingClock);
+        enableFeature(Otc::GameThingCounter);
+        enableFeature(Otc::GameThingPodiumItemType);
+        enableFeature(Otc::GameDoubleShopSellAmount);
     }
 
     m_clientVersion = version;
@@ -1799,6 +1810,7 @@ void Game::leaveMarket()
     enableBotCall();
     m_protocolGame->sendMarketLeave();
     disableBotCall();
+
     g_lua.callGlobalField("g_game", "onMarketLeave");
 }
 

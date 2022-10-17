@@ -104,10 +104,10 @@ public:
         return Color(m_r - other.m_r, m_g - other.m_g, m_b - other.m_b, m_a - other.m_a);
     }
     Color operator*(const float v) const {
-         return Color(m_r * v, m_g * v, m_b * v, m_a * v);
+        return Color(rF() * v, gF() * v, bF() * v, aF() * v);
     }
     Color operator/(const float v) const {
-        return Color(m_r / v, m_g / v, m_b / v, m_a / v);
+        return Color(rF() / v, gF() / v, bF() / v, aF() / v);
     }
 
     Color& operator=(uint32_t rgba) { setRGBA(rgba); return *this; }

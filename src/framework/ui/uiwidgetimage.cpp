@@ -143,16 +143,9 @@ void UIWidget::drawImage(const Rect& screenCoords)
             if (m_imageFixedRatio) {
                 Size textureSize = m_imageTexture->getSize(),
                     textureClipSize = drawRect.size();
-
                 textureClipSize.scale(textureSize, Fw::KeepAspectRatio);
-
-                Point texCoordsOffset;
-                if (textureSize.height() > textureClipSize.height())
-                    texCoordsOffset.y = (textureSize.height() - textureClipSize.height()) / 2;
-                else if (textureSize.width() > textureClipSize.width())
-                    texCoordsOffset.x = (textureSize.width() - textureClipSize.width()) / 2;
-
-                clipRect = Rect(texCoordsOffset, textureClipSize);
+                const double aspectRatio = textureClipSize.width() / (textureClipSize.height() * 1.0);
+                clipRect = Rect(0,0, clipRect.width(), clipRect.width() / aspectRatio);
             }
 
             m_imageCoordsCache.emplace_back(drawRect, clipRect);

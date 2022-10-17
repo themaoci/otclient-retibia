@@ -571,6 +571,7 @@ locale = {
     ["Your character mana is %d out of %d."] = "Your character mana is %d out of %d.",
     ["You have %s hours and %s minutes left"] = "You have %s hours and %s minutes left",
     ["You will not gain 50%% more experience because you aren't premium player, now you receive only 1x experience points"] = "You will not gain 50%% more experience because you aren't premium player, now you receive only 1x experience points",
+    ["Open new Containers in this panel."] = "Otwieraj kontenery w tym panelu."
   }
 }
 

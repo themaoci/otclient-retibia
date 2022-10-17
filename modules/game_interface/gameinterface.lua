@@ -1152,76 +1152,15 @@ function nextViewMode()
 end
 
 function setupViewMode(mode)
-    if mode == currentViewMode then
-        return
-    end
+    -- mode == 0
+    gameMapPanel:setVisibleDimension({
+        width = 15,
+        height = 11
+    })
+    gameMapPanel:setKeepAspectRatio(true)
+    gameMapPanel:setLimitVisibleRange(true)
+    gameMapPanel:setZoom(17)
 
-    if currentViewMode == 2 then
-        gameMapPanel:addAnchor(AnchorLeft, 'gameLeftPanel', AnchorRight)
-        gameMapPanel:addAnchor(AnchorRight, 'gameRightPanel', AnchorLeft)
-        gameMapPanel:addAnchor(AnchorRight, 'gameRightExtraPanel', AnchorLeft)
-        gameMapPanel:addAnchor(AnchorBottom, 'gameBottomPanel', AnchorTop)
-        gameRootPanel:addAnchor(AnchorTop, 'topMenu', AnchorBottom)
-        gameLeftPanel:setOn(modules.client_options.getOption('showLeftPanel'))
-        gameRightExtraPanel:setOn(modules.client_options.getOption('showRightExtraPanel'))
-        gameLeftPanel:setImageColor('white')
-        gameRightPanel:setImageColor('white')
-        gameRightExtraPanel:setImageColor('white')
-        gameLeftPanel:setMarginTop(0)
-        gameRightPanel:setMarginTop(0)
-        gameRightExtraPanel:setMarginTop(0)
-        gameBottomPanel:setImageColor('white')
-        modules.client_topmenu.getTopMenu():setImageColor('white')
-        g_game.changeMapAwareRange(18, 14)
-    end
-
-    if mode == 0 then
-        gameMapPanel:setKeepAspectRatio(true)
-        gameMapPanel:setLimitVisibleRange(false)
-        gameMapPanel:setZoom(18)
-        gameMapPanel:setVisibleDimension({
-            width = 15,
-            height = 11
-        })
-    elseif mode == 1 then
-        gameMapPanel:setKeepAspectRatio(false)
-        gameMapPanel:setLimitVisibleRange(true)
-        gameMapPanel:setZoom(18)
-        gameMapPanel:setVisibleDimension({
-            width = 15,
-            height = 11
-        })
-    elseif mode == 2 then
-        local limit = limitedZoom and not g_game.isGM()
-        gameMapPanel:setLimitVisibleRange(limit)
-        gameMapPanel:setZoom(18)
-        gameMapPanel:setVisibleDimension({
-            width = 15,
-            height = 11
-        })
-        gameMapPanel:fill('parent')
-        gameRootPanel:fill('parent')
-        gameLeftPanel:setImageColor('alpha')
-        gameRightPanel:setImageColor('alpha')
-        gameRightExtraPanel:setImageColor('alpha')
-        gameLeftPanel:setMarginTop(modules.client_topmenu.getTopMenu():getHeight() - gameLeftPanel:getPaddingTop())
-        gameRightPanel:setMarginTop(modules.client_topmenu.getTopMenu():getHeight() - gameRightPanel:getPaddingTop())
-        gameRightExtraPanel:setMarginTop(modules.client_topmenu.getTopMenu():getHeight() -
-                                             gameRightExtraPanel:getPaddingTop())
-        gameLeftPanel:setOn(true)
-        gameLeftPanel:setVisible(true)
-        gameRightPanel:setOn(true)
-        gameRightExtraPanel:setOn(true)
-        gameRightExtraPanel:setVisible(true)
-        gameMapPanel:setOn(true)
-        gameBottomPanel:setImageColor('#ffffff88')
-        modules.client_topmenu.getTopMenu():setImageColor('#ffffff66')
-        if not limit then
-            g_game.changeMapAwareRange(24, 20)
-        end
-    end
-
-    currentViewMode = mode
 end
 
 function limitZoom()

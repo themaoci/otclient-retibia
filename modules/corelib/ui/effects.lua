@@ -8,15 +8,17 @@ function g_effects.fadeIn(widget, time, elapsed)
     if not time then
         time = 300
     end
-    widget:setOpacity(math.min(elapsed / time, 1))
-    removeEvent(widget.fadeEvent)
-    if elapsed < time then
+    if widget ~= nil then
+        widget:setOpacity(math.min(elapsed / time, 1))
         removeEvent(widget.fadeEvent)
-        widget.fadeEvent = scheduleEvent(function()
-            g_effects.fadeIn(widget, time, elapsed + 30)
-        end, 30)
-    else
-        widget.fadeEvent = nil
+        if elapsed < time then
+            removeEvent(widget.fadeEvent)
+            widget.fadeEvent = scheduleEvent(function()
+                g_effects.fadeIn(widget, time, elapsed + 30)
+            end, 30)
+        else
+            widget.fadeEvent = nil
+        end
     end
 end
 

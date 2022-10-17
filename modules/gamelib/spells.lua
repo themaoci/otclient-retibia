@@ -455,3 +455,15 @@ end
 function Spells.getIconFileByProfile(profile)
     return SpelllistSettings[profile]['iconFile']
 end
+
+-- fucking retards missed this function...
+function Spells.getSpellByClientId(id)
+    for profile, data in pairs(SpellInfo) do
+        for k, spell in pairs(data) do
+            if spell.id == id then
+                return spell, profile, k
+            end
+        end
+    end
+    return nil
+end
